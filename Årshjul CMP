@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BI Arshjul 2026</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+.card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.wheel-container { position: relative; width: 780px; height: 780px; margin: 0 auto; }
+.task-dot { position: absolute; border-radius: 50%; cursor: pointer; transition: all 0.3s ease; z-index: 10; }
+.task-dot:hover { transform: scale(1.8); z-index: 50; }
+.task-dot.dimmed { opacity: 0.08; transform: scale(0.6); pointer-events: none; }
+.tooltip { display: none; position: absolute; background: #1e293b; color: white; padding: 8px 12px; border-radius: 8px; font-size: 11px; z-index: 100; pointer-events: none; max-width: 280px; white-space: normal; line-height: 1.4; }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+.filter-btn { padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; user-select: none; }
+.filter-btn.active { box-shadow: 0 0 0 2px white, 0 0 0 4px currentColor; }
+.filter-btn:hover { opacity: 0.85; }
+.counter-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: 700; margin-left: 4px; }
+.month-cell { transition: all 0.3s ease; }
+.timeline-section { transition: all 0.3s ease; overflow: hidden; }
+.timeline-section.hidden-section { max-height: 0; opacity: 0; margin: 0; padding: 0; }
+</style>
+</head>
+<body class="p-6">
+
+<div class="max-w-[1200px] mx-auto">
+  <div class="mb-6">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">BI</div>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Arshjul 2026 - kommunikasjonsplan</h1>
+        <p class="text-gray-500 text-sm">Alle planlagte utsendelser fordelt over aret, gruppert etter strategisk pilar</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER PANEL -->
+  <div class="card p-5 mb-6">
+    <div class="flex flex-col gap-4">
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Budskapstype</p>
+        <div class="flex flex-wrap gap-2">
+          <button class="filter-btn active" data-filter="type" data-value="all" style="background:#f1f5f9;color:#475569;" onclick="toggleFilter(this)">Alle<span class="counter-badge" style="background:#e2e8f0;color:#334155" id="countAll">48</span></button>
+          <button class="filter-btn active" data-filter="type" data-value="kritisk" style="background:#fef2f2;color:#dc2626;" onclick="toggleFilter(this)">Kritisk info<span class="counter-badge" style="background:#fecaca;color:#991b1b" id="countKritisk">9</span></button>
+          <button class="filter-btn active" data-filter="type" data-value="admin" style="background:#eff6ff;color:#2563eb;" onclick="toggleFilter(this)">Administrativt<span class="counter-badge" style="background:#bfdbfe;color:#1e40af" id="countAdmin">14</span></button>
+          <button class="filter-btn active" data-filter="type" data-value="insp" style="background:#f0fdf4;color:#16a34a;" onclick="toggleFilter(this)">Inspirasjon<span class="counter-badge" style="background:#bbf7d0;color:#166534" id="countInsp">17</span></button>
+          <button class="filter-btn active" data-filter="type" data-value="invit" style="background:#fefce8;color:#ca8a04;" onclick="toggleFilter(this)">Invitasjon/Event<span class="counter-badge" style="background:#fef08a;color:#854d0e" id="countInvit">8</span></button>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Strategisk pilar</p>
+        <div class="flex flex-wrap gap-2">
+          <button class="filter-btn active" data-filter="pilar" data-value="all" style="background:#f1f5f9;color:#475569;" onclick="toggleFilter(this)">Alle<span class="counter-badge" style="background:#e2e8f0;color:#334155" id="countPilarAll">48</span></button>
+          <button class="filter-btn active" data-filter="pilar" data-value="rekr" style="background:#eef2ff;color:#4f46e5;" onclick="toggleFilter(this)">Rekruttering<span class="counter-badge" style="background:#c7d2fe;color:#3730a3" id="countRekr">16</span></button>
+          <button class="filter-btn active" data-filter="pilar" data-value="ret" style="background:#f0fdfa;color:#0d9488;" onclick="toggleFilter(this)">Retention<span class="counter-badge" style="background:#99f6e4;color:#115e59" id="countRet">16</span></button>
+          <button class="filter-btn active" data-filter="pilar" data-value="tilf" style="background:#fff7ed;color:#ea580c;" onclick="toggleFilter(this)">Tilfredshet<span class="counter-badge" style="background:#fed7aa;color:#9a3412" id="countTilf">16</span></button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between pt-1 border-t border-gray-100">
+        <p class="text-sm text-gray-500">Viser <span class="font-bold text-gray-800" id="visibleCount">48</span> av 48 oppgaver</p>
+        <button class="text-xs text-indigo-600 font-semibold hover:text-indigo-800 cursor-pointer" onclick="resetFilters()">Nullstill filtre</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHEEL -->
+  <div class="card p-8 mb-6">
+    <div class="wheel-container" id="wheel">
+      <canvas id="wheelCanvas" width="780" height="780" style="position:absolute;top:0;left:0;"></canvas>
+      <div id="dots"></div>
+      <div id="tooltips"></div>
+    </div>
+  </div>
+
+  <!-- MONTH OVERVIEW -->
+  <div class="card p-5 mb-6">
+    <h3 class="font-semibold text-gray-800 mb-4">Manedsoversikt - antall synlige utsendelser</h3>
+    <div class="grid grid-cols-12 gap-1 text-center" id="monthGrid"></div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="card p-5">
+    <h3 class="font-semibold text-gray-800 mb-4">Detaljert tidslinje per maned</h3>
+    <div id="timelineDetail" class="space-y-4"></div>
+  </div>
+
+  <div class="text-center text-xs text-gray-400 py-6">Generert fra CMP - BI Arshjul 2026 - Mai 2026</div>
+</div>
+
+<script>
+const tasks = [
+  {m:1, title:"Portal - Soknadsguide", type:"admin", pilar:"rekr", livs:"Prospekt", kanal:"Portal", campus:"Oslo"},
+  {m:1, title:"SFMC - Invitasjon Apen Dag", type:"insp", pilar:"rekr", livs:"Prospekt", kanal:"SFMC", campus:"Oslo"},
+  {m:1, title:"Sosiale Medier - Studentlife Reels", type:"insp", pilar:"rekr", livs:"Prospekt", kanal:"SoMe", campus:"Oslo"},
+  {m:2, title:"SFMC - Hvorfor velge Finans pa BI", type:"insp", pilar:"rekr", livs:"Prospekt", kanal:"SFMC", campus:"Oslo"},
+  {m:2, title:"Portal - Kurskalender var", type:"admin", pilar:"rekr", livs:"Prospekt", kanal:"Portal", campus:"Trondheim"},
+  {m:2, title:"Sosiale Medier - LinkedIN Ads", type:"insp", pilar:"rekr", livs:"Prospekt", kanal:"SoMe", campus:"Stavanger"},
+  {m:3, title:"SFMC - Invitasjon til bedriftsdag", type:"invit", pilar:"rekr", livs:"Prospekt", kanal:"SFMC", campus:"Oslo"},
+  {m:3, title:"SFMC - Kundeintervju video", type:"insp", pilar:"rekr", livs:"Prospekt", kanal:"SFMC", campus:"Oslo"},
+  {m:3, title:"Sosiale Medier - Webinar Teaser", type:"invit", pilar:"rekr", livs:"Prospekt", kanal:"SoMe", campus:"Trondheim"},
+  {m:3, title:"SFMC - SMS Fristpaminnelse", type:"kritisk", pilar:"rekr", livs:"Prospekt", kanal:"SFMC", campus:"Oslo"},
+  {m:4, title:"Canvas - Webinar for navarende", type:"invit", pilar:"rekr", livs:"Bachelor", kanal:"Canvas", campus:"Bergen"},
+  {m:4, title:"Sosiale Medier - Analyst Insights", type:"insp", pilar:"rekr", livs:"Bachelor", kanal:"SoMe", campus:"Oslo"},
+  {m:4, title:"Portal - Karrieremuligheter Finans", type:"insp", pilar:"rekr", livs:"Bachelor", kanal:"Portal", campus:"Oslo"},
+  {m:4, title:"Canvas - Info til Bachelorstudenter", type:"admin", pilar:"rekr", livs:"Bachelor", kanal:"Canvas", campus:"Oslo"},
+  {m:5, title:"SFMC - Nyhetsbrev Master-fokus", type:"insp", pilar:"rekr", livs:"Master", kanal:"SFMC", campus:"Oslo"},
+  {m:5, title:"SFMC - Takk for deltakelse mail", type:"insp", pilar:"rekr", livs:"Master", kanal:"SFMC", campus:"Oslo"},
+  {m:8, title:"SFMC - Velkomstmail", type:"kritisk", pilar:"ret", livs:"-", kanal:"SFMC", campus:"Oslo"},
+  {m:8, title:"SFMC - SMS Velkommen til Campus", type:"kritisk", pilar:"ret", livs:"-", kanal:"SFMC", campus:"Bergen"},
+  {m:8, title:"Portal - Huskeliste for nye", type:"admin", pilar:"ret", livs:"-", kanal:"Portal", campus:"Stavanger"},
+  {m:8, title:"Canvas - Faglig introduksjon", type:"admin", pilar:"ret", livs:"-", kanal:"Canvas", campus:"Trondheim"},
+  {m:8, title:"Portal - Oversikt over lokaler", type:"admin", pilar:"ret", livs:"Bachelor", kanal:"Portal", campus:"Bergen"},
+  {m:9, title:"Sosiale Medier - Bli med i forening", type:"insp", pilar:"ret", livs:"Bachelor", kanal:"SoMe", campus:"Trondheim"},
+  {m:9, title:"Sosiale Medier - Takeover uke", type:"insp", pilar:"ret", livs:"Bachelor", kanal:"SoMe", campus:"Oslo"},
+  {m:9, title:"Portal - Ressursbank for deg", type:"insp", pilar:"ret", livs:"Bachelor", kanal:"Portal", campus:"Digital"},
+  {m:9, title:"Canvas - Studiefremdrift sjekk", type:"admin", pilar:"ret", livs:"Bachelor", kanal:"Canvas", campus:"Digital"},
+  {m:9, title:"SFMC - SMS Viktige frister online", type:"kritisk", pilar:"ret", livs:"Bachelor", kanal:"SFMC", campus:"Digital"},
+  {m:9, title:"SFMC - Online QA Session", type:"admin", pilar:"ret", livs:"Bachelor", kanal:"SFMC", campus:"Digital"},
+  {m:10, title:"SFMC - Invitasjon til Grillfest", type:"invit", pilar:"ret", livs:"Bachelor", kanal:"SFMC", campus:"Oslo"},
+  {m:10, title:"SFMC - Webinar om studieteknikk", type:"insp", pilar:"ret", livs:"Master", kanal:"SFMC", campus:"Oslo"},
+  {m:10, title:"SFMC - Lykke til SMS", type:"insp", pilar:"ret", livs:"Master", kanal:"SFMC", campus:"Oslo"},
+  {m:11, title:"Portal - FAQ Eksamen", type:"admin", pilar:"ret", livs:"Master", kanal:"Portal", campus:"Trondheim"},
+  {m:11, title:"Canvas - Proveeksamen melding", type:"admin", pilar:"ret", livs:"Master", kanal:"Canvas", campus:"Bergen"},
+  {m:3, title:"SFMC - Life in Norway Guide", type:"admin", pilar:"tilf", livs:"Master", kanal:"SFMC", campus:"Oslo"},
+  {m:3, title:"Portal - Visa og Housing info", type:"admin", pilar:"tilf", livs:"Master", kanal:"Portal", campus:"Oslo"},
+  {m:4, title:"Portal - CV-kurs ressurser", type:"admin", pilar:"tilf", livs:"Master", kanal:"Portal", campus:"Stavanger"},
+  {m:4, title:"Sosiale Medier - Bedriftspresentasjoner", type:"invit", pilar:"tilf", livs:"Master", kanal:"SoMe", campus:"Oslo"},
+  {m:5, title:"SFMC - SMS Pamelding karrieredag", type:"kritisk", pilar:"tilf", livs:"Master", kanal:"SFMC", campus:"Oslo"},
+  {m:5, title:"SFMC - Nyhetsbrev Jobbmuligheter", type:"insp", pilar:"tilf", livs:"Master", kanal:"SFMC", campus:"Trondheim"},
+  {m:5, title:"SFMC - SMS Buddy match", type:"kritisk", pilar:"tilf", livs:"Master", kanal:"SFMC", campus:"Oslo"},
+  {m:6, title:"Canvas - Kunngjoring undersokelse", type:"admin", pilar:"tilf", livs:"Bachelor", kanal:"Canvas", campus:"Alle"},
+  {m:6, title:"SFMC - SMS Svar pa undersokelsen", type:"kritisk", pilar:"tilf", livs:"Bachelor", kanal:"SFMC", campus:"Trondheim"},
+  {m:6, title:"SFMC - Nyhetsbrev: Slik ble det", type:"insp", pilar:"tilf", livs:"Bachelor", kanal:"SFMC", campus:"Bergen, Trondheim"},
+  {m:6, title:"Portal - Hva vi endret i ar", type:"admin", pilar:"tilf", livs:"Bachelor", kanal:"Portal / bi.no", campus:"Alle"},
+  {m:10, title:"Sosiale Medier - International Night", type:"invit", pilar:"tilf", livs:"Master", kanal:"SoMe", campus:"Bergen"},
+  {m:11, title:"SFMC - Re-skilling tilbud", type:"insp", pilar:"tilf", livs:"Alumni", kanal:"SFMC", campus:"Stavanger"},
+  {m:11, title:"Portal - Alumni-medlemsskap", type:"admin", pilar:"tilf", livs:"Alumni", kanal:"Portal", campus:"Oslo"},
+  {m:11, title:"Sosiale Medier - Historier fra Alumni", type:"insp", pilar:"tilf", livs:"Alumni", kanal:"SoMe", campus:"Oslo"},
+  {m:12, title:"SFMC - Invitasjon Alumni Galla", type:"invit", pilar:"tilf", livs:"Alumni", kanal:"SFMC", campus:"Oslo"},
+];
+
+const typeColors = { kritisk:'#ef4444', admin:'#3b82f6', insp:'#22c55e', invit:'#eab308' };
+const typeLabels = { kritisk:'Kritisk info', admin:'Administrativt', insp:'Inspirasjon', invit:'Invitasjon/Event' };
+const pilarLabels = { rekr:'Rekruttering', ret:'Retention', tilf:'Tilfredshet' };
+const months = ['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];
+const monthBg = ['bg-blue-50','bg-blue-50','bg-green-50','bg-green-50','bg-green-50','bg-yellow-50','bg-yellow-50','bg-orange-50','bg-orange-50','bg-red-50','bg-red-50','bg-blue-50'];
+
+// Filter state
+let activeTypes = new Set(['kritisk','admin','insp','invit']);
+let activePilars = new Set(['rekr','ret','tilf']);
+
+const cx = 390, cy = 390;
+const canvas = document.getElementById('wheelCanvas');
+const ctx = canvas.getContext('2d');
+
+function drawWheel() {
+  ctx.clearRect(0, 0, 780, 780);
+  ctx.globalAlpha = 0.03;
+  ctx.beginPath(); ctx.arc(cx, cy, 360, 0, Math.PI*2); ctx.fillStyle='#6366f1'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, 280, 0, Math.PI*2); ctx.fillStyle='#ffffff'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, 280, 0, Math.PI*2); ctx.fillStyle='#14b8a6'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, 200, 0, Math.PI*2); ctx.fillStyle='#ffffff'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, 200, 0, Math.PI*2); ctx.fillStyle='#f97316'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, 120, 0, Math.PI*2); ctx.fillStyle='#ffffff'; ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.beginPath(); ctx.arc(cx, cy, 360, 0, Math.PI*2); ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, 280, 0, Math.PI*2); ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, 200, 0, Math.PI*2); ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, 120, 0, Math.PI*2); ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1; ctx.stroke();
+  ctx.font = '600 10px Inter, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillStyle = '#6366f1'; ctx.globalAlpha=0.5; ctx.fillText('REKRUTTERING', cx, cy - 232); ctx.globalAlpha=1;
+  ctx.fillStyle = '#14b8a6'; ctx.globalAlpha=0.5; ctx.fillText('RETENTION', cx, cy - 152); ctx.globalAlpha=1;
+  ctx.fillStyle = '#f97316'; ctx.globalAlpha=0.5; ctx.fillText('TILFREDSHET', cx, cy - 72); ctx.globalAlpha=1;
+  for (let i = 0; i < 12; i++) {
+    const angle = (i * 30 - 90) * Math.PI / 180;
+    ctx.beginPath(); ctx.moveTo(cx + Math.cos(angle) * 50, cy + Math.sin(angle) * 50);
+    ctx.lineTo(cx + Math.cos(angle) * 370, cy + Math.sin(angle) * 370);
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.stroke();
+  }
+  ctx.font = '700 12px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let i = 0; i < 12; i++) {
+    const angle = ((i * 30) + 15 - 90) * Math.PI / 180;
+    ctx.fillStyle = '#334155';
+    ctx.fillText(months[i].toUpperCase(), cx + Math.cos(angle) * 375, cy + Math.sin(angle) * 375);
+  }
+  ctx.beginPath(); ctx.arc(cx, cy, 50, 0, Math.PI*2); ctx.fillStyle='#4f46e5'; ctx.fill();
+  ctx.font = '700 16px Inter, sans-serif'; ctx.fillStyle = '#ffffff'; ctx.fillText('2026', cx, cy);
+}
+
+// Store dot elements
+const dotElements = [];
+const tooltipElements = [];
+
+function buildDots() {
+  const dotsContainer = document.getElementById('dots');
+  const tooltipsContainer = document.getElementById('tooltips');
+  dotsContainer.innerHTML = '';
+  tooltipsContainer.innerHTML = '';
+  dotElements.length = 0;
+  tooltipElements.length = 0;
+
+  const monthPilarCount = {};
+  tasks.forEach(t => { const k = t.m + '-' + t.pilar; monthPilarCount[k] = (monthPilarCount[k] || 0) + 1; });
+  const monthPilarIndex = {};
+
+  tasks.forEach((t, idx) => {
+    const key = t.m + '-' + t.pilar;
+    if (!monthPilarIndex[key]) monthPilarIndex[key] = 0;
+    const indexInGroup = monthPilarIndex[key]++;
+    const totalInGroup = monthPilarCount[key];
+    let baseR = t.pilar === 'rekr' ? 320 : t.pilar === 'ret' ? 240 : 160;
+    const monthStartAngle = (t.m - 1) * 30 - 90;
+    const spacing = 26 / (totalInGroup + 1);
+    const dotAngle = (monthStartAngle + 2 + spacing * (indexInGroup + 1)) * Math.PI / 180;
+    const rVariation = (indexInGroup % 3 - 1) * 18;
+    const r = baseR + rVariation;
+    const x = cx + Math.cos(dotAngle) * r - 6;
+    const y = cy + Math.sin(dotAngle) * r - 6;
+
+    const dot = document.createElement('div');
+    dot.className = 'task-dot';
+    dot.style.cssText = `left:${x}px;top:${y}px;width:12px;height:12px;background:${typeColors[t.type]};box-shadow:0 0 0 3px ${typeColors[t.type]}33;`;
+    dot.dataset.idx = idx;
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.innerHTML = `<strong>${t.title}</strong><br>${typeLabels[t.type]} | ${pilarLabels[t.pilar]}<br>${t.livs} | ${t.kanal} | ${t.campus}`;
+    tooltip.style.cssText = `left:${x + 18}px;top:${y - 10}px;`;
+
+    dot.addEventListener('mouseenter', () => { if (!dot.classList.contains('dimmed')) tooltip.style.display = 'block'; });
+    dot.addEventListener('mouseleave', () => tooltip.style.display = 'none');
+
+    dotsContainer.appendChild(dot);
+    tooltipsContainer.appendChild(tooltip);
+    dotElements.push(dot);
+    tooltipElements.push(tooltip);
+  });
+}
+
+function buildMonthGrid() {
+  const grid = document.getElementById('monthGrid');
+  grid.innerHTML = '';
+  for (let m = 1; m <= 12; m++) {
+    const div = document.createElement('div');
+    div.className = `month-cell p-2 rounded-lg ${monthBg[m-1]}`;
+    div.id = `monthCell${m}`;
+    div.innerHTML = `<p class="text-xs text-gray-500">${months[m-1]}</p><p class="text-lg font-bold text-gray-800" id="mCount${m}">0</p>`;
+    grid.appendChild(div);
+  }
+}
+
+function buildTimeline() {
+  const el = document.getElementById('timelineDetail');
+  el.innerHTML = '';
+  for (let m = 1; m <= 12; m++) {
+    const mTasks = tasks.filter(t => t.m === m);
+    if (mTasks.length === 0) continue;
+    const section = document.createElement('div');
+    section.className = 'timeline-section border-l-4 pl-4 pb-2';
+    section.id = `timeline-m${m}`;
+    section.dataset.month = m;
+    let html = `<div class="flex items-center gap-2 mb-2">
+      <span class="font-bold text-gray-800">${months[m-1]} 2026</span>
+      <span class="text-xs px-2 py-0.5 rounded-full" id="timelineBadge${m}">0 utsendelser</span>
+    </div><div class="grid gap-1" id="timelineItems${m}">`;
+    mTasks.forEach((t, i) => {
+      const bgClass = t.type === 'kritisk' ? 'bg-red-50' : t.type === 'admin' ? 'bg-blue-50' : t.type === 'insp' ? 'bg-green-50' : 'bg-yellow-50';
+      const textClass = t.type === 'kritisk' ? 'text-red-700' : t.type === 'admin' ? 'text-blue-700' : t.type === 'insp' ? 'text-green-700' : 'text-yellow-700';
+      const globalIdx = tasks.findIndex(tt => tt === t);
+      html += `<div class="flex items-center gap-2 text-sm py-1 timeline-item" data-gidx="${globalIdx}" id="tl-${globalIdx}">
+        <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${typeColors[t.type]}"></span>
+        <span class="font-medium text-gray-700 flex-1">${t.title}</span>
+        <span class="badge ${bgClass} ${textClass} flex-shrink-0">${typeLabels[t.type]}</span>
+        <span class="text-xs text-gray-400 flex-shrink-0">${t.livs}</span>
+        <span class="text-xs text-gray-400 flex-shrink-0">${t.kanal}</span>
+      </div>`;
+    });
+    html += '</div>';
+    section.innerHTML = html;
+    el.appendChild(section);
+  }
+}
+
+function isVisible(t) {
+  return activeTypes.has(t.type) && activePilars.has(t.pilar);
+}
+
+function applyFilters() {
+  let visCount = 0;
+  const monthVisCount = {};
+
+  tasks.forEach((t, idx) => {
+    const vis = isVisible(t);
+    if (vis) { visCount++; monthVisCount[t.m] = (monthVisCount[t.m] || 0) + 1; }
+    if (dotElements[idx]) {
+      dotElements[idx].classList.toggle('dimmed', !vis);
+      tooltipElements[idx].style.display = 'none';
+    }
+    const tlItem = document.getElementById(`tl-${idx}`);
+    if (tlItem) { tlItem.style.display = vis ? 'flex' : 'none'; }
+  });
+
+  document.getElementById('visibleCount').textContent = visCount;
+
+  // Update month grid
+  for (let m = 1; m <= 12; m++) {
+    const c = monthVisCount[m] || 0;
+    const el = document.getElementById(`mCount${m}`);
+    if (el) el.textContent = c;
+    const cell = document.getElementById(`monthCell${m}`);
+    if (cell) cell.style.opacity = c === 0 ? '0.3' : '1';
+  }
+
+  // Update timeline sections
+  for (let m = 1; m <= 12; m++) {
+    const section = document.getElementById(`timeline-m${m}`);
+    if (!section) continue;
+    const c = monthVisCount[m] || 0;
+    section.classList.toggle('hidden-section', c === 0);
+    section.style.borderColor = c >= 6 ? '#ef4444' : c >= 4 ? '#eab308' : '#22c55e';
+    const badge = document.getElementById(`timelineBadge${m}`);
+    if (badge) {
+      badge.textContent = `${c} utsendelser`;
+      badge.className = `text-xs px-2 py-0.5 rounded-full ${c >= 6 ? 'bg-red-100 text-red-700' : c >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`;
+    }
+  }
+
+  // Update counter badges
+  const counts = { kritisk:0, admin:0, insp:0, invit:0, rekr:0, ret:0, tilf:0 };
+  tasks.forEach(t => { if (isVisible(t)) { counts[t.type]++; counts[t.pilar]++; }});
+  document.getElementById('countAll').textContent = visCount;
+  document.getElementById('countKritisk').textContent = counts.kritisk;
+  document.getElementById('countAdmin').textContent = counts.admin;
+  document.getElementById('countInsp').textContent = counts.insp;
+  document.getElementById('countInvit').textContent = counts.invit;
+  document.getElementById('countPilarAll').textContent = visCount;
+  document.getElementById('countRekr').textContent = counts.rekr;
+  document.getElementById('countRet').textContent = counts.ret;
+  document.getElementById('countTilf').textContent = counts.tilf;
+}
+
+function toggleFilter(btn) {
+  const filterGroup = btn.dataset.filter;
+  const value = btn.dataset.value;
+
+  if (value === 'all') {
+    const set = filterGroup === 'type' ? activeTypes : activePilars;
+    const allValues = filterGroup === 'type' ? ['kritisk','admin','insp','invit'] : ['rekr','ret','tilf'];
+    const allActive = allValues.every(v => set.has(v));
+    if (allActive) {
+      set.clear();
+      document.querySelectorAll(`[data-filter="${filterGroup}"]`).forEach(b => b.classList.remove('active'));
+    } else {
+      allValues.forEach(v => set.add(v));
+      document.querySelectorAll(`[data-filter="${filterGroup}"]`).forEach(b => b.classList.add('active'));
+    }
+  } else {
+    const set = filterGroup === 'type' ? activeTypes : activePilars;
+    if (set.has(value)) { set.delete(value); btn.classList.remove('active'); }
+    else { set.add(value); btn.classList.add('active'); }
+    // Update "Alle" button
+    const allValues = filterGroup === 'type' ? ['kritisk','admin','insp','invit'] : ['rekr','ret','tilf'];
+    const allBtn = document.querySelector(`[data-filter="${filterGroup}"][data-value="all"]`);
+    if (allValues.every(v => set.has(v))) allBtn.classList.add('active');
+    else allBtn.classList.remove('active');
+  }
+  applyFilters();
+}
+
+function resetFilters() {
+  activeTypes = new Set(['kritisk','admin','insp','invit']);
+  activePilars = new Set(['rekr','ret','tilf']);
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.add('active'));
+  applyFilters();
+}
+
+// Init
+drawWheel();
+buildDots();
+buildMonthGrid();
+buildTimeline();
+applyFilters();
+</script>
+</body>
+</html>
