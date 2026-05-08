@@ -20,10 +20,13 @@ body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:
 .task-dot:hover{transform:scale(1.6);z-index:50;}
 .task-dot.dimmed{opacity:.07;transform:scale(.5);pointer-events:none;}
 .tooltip{display:none;position:absolute;background:#1e293b;color:white;padding:8px 12px;border-radius:8px;font-size:11px;z-index:100;pointer-events:none;max-width:260px;white-space:normal;line-height:1.4;}
-.month-hit{position:absolute;cursor:pointer;z-index:5;opacity:0;}
+.month-hit{position:absolute;cursor:pointer;z-index:5;opacity:0;transition:opacity .2s;}
 .month-hit:hover{opacity:0.08;background:white;}
+.month-label-link{position:absolute;cursor:pointer;z-index:6;text-decoration:none;transition:all .2s;border-radius:6px;padding:2px 6px;}
+.month-label-link:hover{background:rgba(99,102,241,0.15);}
+.month-label-link:hover .ml-text{color:#a5b4fc !important;}
+.month-label-link:hover .ml-count{opacity:1 !important;}
 
-/* Zoom overlay */
 #zoomOverlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:200;display:none;opacity:0;transition:opacity .4s ease;}
 #zoomOverlay.show{display:flex;opacity:1;}
 #zoomBg{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.92);backdrop-filter:blur(16px);}
@@ -36,6 +39,8 @@ body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:
 .zoom-popup{position:absolute;border-radius:12px;padding:10px 14px;font-size:12px;font-weight:500;line-height:1.5;z-index:4;pointer-events:auto;max-width:240px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.4);}
 .zoom-dot{position:absolute;border-radius:50%;z-index:5;box-shadow:0 0 12px rgba(255,255,255,0.2);}
 .badge-sm{display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;margin-left:4px;vertical-align:middle;}
+@keyframes pulse-hint{0%,100%{opacity:.5;}50%{opacity:1;}}
+.hint-pulse{animation:pulse-hint 2.5s ease-in-out infinite;}
 </style>
 </head>
 <body class="p-6">
@@ -46,7 +51,7 @@ body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:
       <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm">BI</div>
       <div>
         <h1 class="text-xl font-bold text-white">Arshjul 2026 <span class="text-indigo-400 text-sm font-medium ml-2">Eksperimentell</span></h1>
-        <p class="text-slate-400 text-xs">Klikk pa en maned i hjulet for a zoome inn. Alle filtre fungerer som for.</p>
+        <p class="text-slate-400 text-xs">Alle planlagte utsendelser fordelt over aret, gruppert etter strategisk pilar</p>
       </div>
     </div>
   </div>
@@ -91,6 +96,11 @@ body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:
     </div>
   </div>
 
+  <!-- HINT -->
+  <div class="text-center mb-3">
+    <p class="text-xs text-slate-500 hint-pulse">Klikk pa en maned i hjulet for mer informasjon</p>
+  </div>
+
   <!-- WHEEL -->
   <div class="card p-8 mb-5" id="wheelWrap">
     <div id="wheelInner">
@@ -98,6 +108,7 @@ body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:
       <div id="dots"></div>
       <div id="tips"></div>
       <div id="hitAreas"></div>
+      <div id="monthLinks"></div>
     </div>
   </div>
 
@@ -206,8 +217,7 @@ function dw(){
   xx.fillStyle='#2dd4bf';xx.globalAlpha=.4;xx.fillText('RETENTION',cx,cy-152);xx.globalAlpha=1;
   xx.fillStyle='#fb923c';xx.globalAlpha=.4;xx.fillText('TILFREDSHET',cx,cy-72);xx.globalAlpha=1;
   for(let i=0;i<12;i++){const a=(i*30-90)*Math.PI/180;xx.beginPath();xx.moveTo(cx+Math.cos(a)*50,cy+Math.sin(a)*50);xx.lineTo(cx+Math.cos(a)*370,cy+Math.sin(a)*370);xx.strokeStyle='rgba(148,163,184,0.12)';xx.lineWidth=1;xx.stroke();}
-  xx.font='700 12px Inter,sans-serif';xx.textAlign='center';xx.textBaseline='middle';
-  for(let i=0;i<12;i++){const a=((i*30)+15-90)*Math.PI/180;xx.fillStyle='#94a3b8';xx.fillText(mo[i].toUpperCase(),cx+Math.cos(a)*375,cy+Math.sin(a)*375);}
+  // Month labels drawn on canvas (static, non-clickable – clickable links overlaid via DOM)
   xx.beginPath();xx.arc(cx,cy,50,0,Math.PI*2);xx.fillStyle='#4f46e5';xx.fill();
   xx.font='700 16px Inter,sans-serif';xx.fillStyle='#fff';xx.fillText('2026',cx,cy);
 }
@@ -236,23 +246,41 @@ function bd(){
   });
 }
 
-// Build clickable month hit areas (wedge-shaped divs approximated)
 function buildHitAreas(){
   const ha=document.getElementById('hitAreas');ha.innerHTML='';
   for(let i=0;i<12;i++){
     const a1=(i*30-90)*Math.PI/180;
     const a2=((i+1)*30-90)*Math.PI/180;
     const amid=(a1+a2)/2;
-    // Create a circle hit area centered in the wedge
     const hr=210;
     const hx=cx+Math.cos(amid)*hr-40;
     const hy=cy+Math.sin(amid)*hr-40;
     const d=document.createElement('div');
     d.className='month-hit';
     d.style.cssText=`left:${hx}px;top:${hy}px;width:80px;height:80px;border-radius:50%;`;
-    d.dataset.month=i+1;
     d.addEventListener('click',()=>openZoom(i+1));
     ha.appendChild(d);
+  }
+}
+
+// Clickable month name labels overlaid on wheel
+function buildMonthLinks(){
+  const ml=document.getElementById('monthLinks');ml.innerHTML='';
+  for(let i=0;i<12;i++){
+    const angle=((i*30)+15-90)*Math.PI/180;
+    const lx=cx+Math.cos(angle)*375;
+    const ly=cy+Math.sin(angle)*375;
+    const mc=T.filter(t=>t.m===i+1&&iv(t)).length;
+
+    const a=document.createElement('a');
+    a.className='month-label-link';
+    a.href='/workspace/output/javascript:void(0)';
+    a.addEventListener('click',(e)=>{e.preventDefault();openZoom(i+1);});
+    a.style.cssText=`left:${lx}px;top:${ly}px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;`;
+    a.innerHTML=`<span class="ml-text" style="font-weight:700;font-size:12px;color:#94a3b8;transition:color .2s;">${mo[i].toUpperCase()}</span>
+      <span class="ml-count" style="font-size:9px;color:#64748b;opacity:.6;transition:opacity .2s;">${mc||''}</span>`;
+    a.id=`ml${i+1}`;
+    ml.appendChild(a);
   }
 }
 
@@ -282,6 +310,12 @@ function af(){
   document.getElementById('cLP').textContent=cn.Prospekt;
   document.getElementById('cLAl').textContent=cn.Alumni;
   document.getElementById('cLU').textContent=cn['-'];
+  // Update month link counts
+  for(let i=0;i<12;i++){
+    const mc=T.filter(t=>t.m===i+1&&iv(t)).length;
+    const el=document.getElementById(`ml${i+1}`);
+    if(el){const cs=el.querySelector('.ml-count');if(cs)cs.textContent=mc||'';}
+  }
 }
 
 function tff(b){
@@ -311,33 +345,24 @@ function rf(){
 function openZoom(month){
   const items=T.filter(t=>t.m===month&&iv(t));
   if(!items.length)return;
-
   const ov=document.getElementById('zoomOverlay');
   document.getElementById('zoomTitle').textContent=mo[month-1]+' 2026';
   document.getElementById('zoomSub').textContent=items.length+' aktivitet'+(items.length>1?'er':'');
-
   const canvas=document.getElementById('zoomCanvas');
   const dotsC=document.getElementById('zoomDots');
   const popC=document.getElementById('zoomPopups');
   const svg=document.getElementById('zoomSvg');
   dotsC.innerHTML='';popC.innerHTML='';svg.innerHTML='';
-
   ov.style.display='flex';
   requestAnimationFrame(()=>{ov.classList.add('show');});
-
-  // Wait for layout
   requestAnimationFrame(()=>{
     const rect=canvas.getBoundingClientRect();
     const W=rect.width,H=rect.height;
     const ccx=W/2,ccy=H/2;
     const maxR=Math.min(W,H)/2-20;
-
-    // Draw arc background
     svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
     const a1=((month-1)*30-90)*Math.PI/180;
     const a2=(month*30-90)*Math.PI/180;
-
-    // Draw the slice
     const slicePath=document.createElementNS('http://www.w3.org/2000/svg','path');
     const r1=maxR*0.12,r2=maxR*0.95;
     const x1s=ccx+Math.cos(a1)*r1,y1s=ccy+Math.sin(a1)*r1;
@@ -349,8 +374,6 @@ function openZoom(month){
     slicePath.setAttribute('stroke','rgba(99,102,241,0.2)');
     slicePath.setAttribute('stroke-width','1.5');
     svg.appendChild(slicePath);
-
-    // Ring lines
     [0.3,0.55,0.75].forEach(f=>{
       const rr=maxR*f;
       const arc=document.createElementNS('http://www.w3.org/2000/svg','path');
@@ -360,15 +383,23 @@ function openZoom(month){
       arc.setAttribute('fill','none');arc.setAttribute('stroke','rgba(148,163,184,0.1)');arc.setAttribute('stroke-width','1');
       svg.appendChild(arc);
     });
-
-    // Place dots on the arc
+    // Pilar labels in zoom
     const pilarR={rekr:0.82,ret:0.58,tilf:0.35};
+    const amid=(a1+a2)/2;
+    [{p:'rekr',c:'#818cf8',n:'Rekruttering'},{p:'ret',c:'#2dd4bf',n:'Retention'},{p:'tilf',c:'#fb923c',n:'Tilfredshet'}].forEach(pl=>{
+      const pr=maxR*pilarR[pl.p];
+      const tx=ccx+Math.cos(amid)*pr;
+      const ty=ccy+Math.sin(amid)*pr;
+      const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('x',tx);txt.setAttribute('y',ty-18);
+      txt.setAttribute('text-anchor','middle');txt.setAttribute('fill',pl.c);
+      txt.setAttribute('font-size','10');txt.setAttribute('font-weight','600');txt.setAttribute('opacity','0.4');
+      txt.textContent=pl.n.toUpperCase();
+      svg.appendChild(txt);
+    });
     const dotPositions=[];
-
-    // Group by pilar for spacing
     const byPilar={};
     items.forEach((t,i)=>{const p=t.p;if(!byPilar[p])byPilar[p]=[];byPilar[p].push({task:t,idx:i});});
-
     Object.keys(byPilar).forEach(p=>{
       const group=byPilar[p];
       const baseR=maxR*pilarR[p];
@@ -382,28 +413,19 @@ function openZoom(month){
         const dx=ccx+Math.cos(ang)*r;
         const dy=ccy+Math.sin(ang)*r;
         dotPositions.push({x:dx,y:dy,task:item.task});
-
         const dot=document.createElement('div');
         dot.className='zoom-dot';
         dot.style.cssText=`left:${dx-7}px;top:${dy-7}px;width:14px;height:14px;background:${yC[item.task.y]};box-shadow:0 0 16px ${yC[item.task.y]}88;`;
         dotsC.appendChild(dot);
       });
     });
-
-    // Layout popups avoiding overlap
-    const popups=[];
     const popW=220,popH=58;
     const usedRects=[];
-
     function overlaps(rx,ry,rw,rh){
-      for(const u of usedRects){
-        if(!(rx+rw<u.x||rx>u.x+u.w||ry+rh<u.y||ry>u.y+u.h))return true;
-      }
+      for(const u of usedRects){if(!(rx+rw<u.x||rx>u.x+u.w||ry+rh<u.y||ry>u.y+u.h))return true;}
       return false;
     }
-
     dotPositions.forEach((dp,i)=>{
-      // Try positions: right, left, above, below, further out
       const offsets=[
         {ox:30,oy:-popH/2},{ox:-popW-30,oy:-popH/2},
         {ox:-popW/2,oy:-popH-25},{ox:-popW/2,oy:25},
@@ -412,16 +434,14 @@ function openZoom(month){
         {ox:80,oy:-popH/2},{ox:-popW-80,oy:-popH/2},
         {ox:30,oy:-popH-40},{ox:30,oy:40},
         {ox:-popW/2,oy:-popH-50},{ox:-popW/2,oy:55},
+        {ox:100,oy:-10},{ox:-popW-100,oy:-10},
       ];
       let px=dp.x+30,py=dp.y-popH/2;
       for(const o of offsets){
         const tx=dp.x+o.ox,ty=dp.y+o.oy;
-        if(tx>5&&tx+popW<W-5&&ty>5&&ty+popH<H-5&&!overlaps(tx,ty,popW,popH)){
-          px=tx;py=ty;break;
-        }
+        if(tx>5&&tx+popW<W-5&&ty>5&&ty+popH<H-5&&!overlaps(tx,ty,popW,popH)){px=tx;py=ty;break;}
       }
       usedRects.push({x:px,y:py,w:popW,h:popH});
-
       const t=dp.task;
       const pop=document.createElement('div');
       pop.className='zoom-popup';
@@ -429,8 +449,6 @@ function openZoom(month){
       pop.innerHTML=`<div style="color:${yC[t.y]};font-weight:700;font-size:13px;margin-bottom:2px;">${t.t}</div>
         <div style="color:rgba(226,232,240,0.7);font-size:11px;">${pL[t.p]} <span class="badge-sm" style="background:${yBdr[t.y]};color:${yC[t.y]}">${t.l}</span> <span style="color:rgba(148,163,184,0.6)">via ${t.k}</span></div>`;
       popC.appendChild(pop);
-
-      // Draw connector line
       const pcx=px+(dp.x<px?0:popW);
       const pcy=py+popH/2;
       const dist=Math.sqrt((pcx-dp.x)**2+(pcy-dp.y)**2);
@@ -455,7 +473,7 @@ function closeZoom(){
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeZoom();});
 
 // Init
-dw();bd();buildHitAreas();af();
+dw();bd();buildHitAreas();buildMonthLinks();af();
 </script>
 </body>
 </html>
