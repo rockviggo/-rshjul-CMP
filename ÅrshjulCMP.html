@@ -12,377 +12,296 @@ body { font-family: 'Inter', sans-serif; background: #f8fafc; }
 .wheel-container { position: relative; width: 780px; height: 780px; margin: 0 auto; }
 .task-dot { position: absolute; border-radius: 50%; cursor: pointer; transition: all 0.3s ease; z-index: 10; }
 .task-dot:hover { transform: scale(1.8); z-index: 50; }
-.task-dot.dimmed { opacity: 0.08; transform: scale(0.6); pointer-events: none; }
+.task-dot.dimmed { opacity: 0.07; transform: scale(0.5); pointer-events: none; }
 .tooltip { display: none; position: absolute; background: #1e293b; color: white; padding: 8px 12px; border-radius: 8px; font-size: 11px; z-index: 100; pointer-events: none; max-width: 280px; white-space: normal; line-height: 1.4; }
 .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 500; }
-.filter-btn { padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; user-select: none; }
-.filter-btn.active { box-shadow: 0 0 0 2px white, 0 0 0 4px currentColor; }
-.filter-btn:hover { opacity: 0.85; }
-.counter-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: 700; margin-left: 4px; }
+.fb { padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; border: none; user-select: none; line-height: 1.4; }
+.fb.active { box-shadow: 0 0 0 1.5px white, 0 0 0 3px currentColor; }
+.fb:hover { opacity: 0.8; }
+.cnt { display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; border-radius: 8px; font-size: 10px; font-weight: 700; margin-left: 3px; }
 .month-cell { transition: all 0.3s ease; }
-.timeline-section { transition: all 0.3s ease; overflow: hidden; }
-.timeline-section.hidden-section { max-height: 0; opacity: 0; margin: 0; padding: 0; }
+.tls { transition: all 0.3s ease; overflow: hidden; }
+.tls.hid { max-height: 0; opacity: 0; margin: 0; padding: 0; }
 </style>
 </head>
 <body class="p-6">
-
 <div class="max-w-[1200px] mx-auto">
-  <div class="mb-6">
-    <div class="flex items-center gap-3 mb-2">
-      <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">BI</div>
+
+  <div class="mb-5">
+    <div class="flex items-center gap-3 mb-1">
+      <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm">BI</div>
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Arshjul 2026 - kommunikasjonsplan</h1>
-        <p class="text-gray-500 text-sm">Alle planlagte utsendelser fordelt over aret, gruppert etter strategisk pilar</p>
+        <h1 class="text-xl font-bold text-gray-900">Arshjul 2026 - kommunikasjonsplan</h1>
+        <p class="text-gray-500 text-xs">Alle planlagte utsendelser fordelt over aret, gruppert etter strategisk pilar</p>
       </div>
     </div>
   </div>
 
-  <!-- FILTER PANEL -->
-  <div class="card p-5 mb-6">
-    <div class="flex flex-col gap-4">
+  <!-- FILTERS -->
+  <div class="card p-4 mb-5">
+    <div class="flex flex-wrap items-start gap-x-6 gap-y-3">
       <div>
-        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Budskapstype</p>
-        <div class="flex flex-wrap gap-2">
-          <button class="filter-btn active" data-filter="type" data-value="all" style="background:#f1f5f9;color:#475569;" onclick="toggleFilter(this)">Alle<span class="counter-badge" style="background:#e2e8f0;color:#334155" id="countAll">48</span></button>
-          <button class="filter-btn active" data-filter="type" data-value="kritisk" style="background:#fef2f2;color:#dc2626;" onclick="toggleFilter(this)">Kritisk info<span class="counter-badge" style="background:#fecaca;color:#991b1b" id="countKritisk">9</span></button>
-          <button class="filter-btn active" data-filter="type" data-value="admin" style="background:#eff6ff;color:#2563eb;" onclick="toggleFilter(this)">Administrativt<span class="counter-badge" style="background:#bfdbfe;color:#1e40af" id="countAdmin">14</span></button>
-          <button class="filter-btn active" data-filter="type" data-value="insp" style="background:#f0fdf4;color:#16a34a;" onclick="toggleFilter(this)">Inspirasjon<span class="counter-badge" style="background:#bbf7d0;color:#166534" id="countInsp">17</span></button>
-          <button class="filter-btn active" data-filter="type" data-value="invit" style="background:#fefce8;color:#ca8a04;" onclick="toggleFilter(this)">Invitasjon/Event<span class="counter-badge" style="background:#fef08a;color:#854d0e" id="countInvit">8</span></button>
+        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Budskapstype</p>
+        <div class="flex flex-wrap gap-1.5">
+          <button class="fb active" data-f="type" data-v="all" style="background:#f1f5f9;color:#475569;" onclick="tf(this)">Alle <span class="cnt" style="background:#e2e8f0;color:#334155" id="cAll">48</span></button>
+          <button class="fb active" data-f="type" data-v="kritisk" style="background:#fef2f2;color:#dc2626;" onclick="tf(this)">Kritisk<span class="cnt" style="background:#fecaca;color:#991b1b" id="cK">9</span></button>
+          <button class="fb active" data-f="type" data-v="admin" style="background:#eff6ff;color:#2563eb;" onclick="tf(this)">Admin<span class="cnt" style="background:#bfdbfe;color:#1e40af" id="cA">14</span></button>
+          <button class="fb active" data-f="type" data-v="insp" style="background:#f0fdf4;color:#16a34a;" onclick="tf(this)">Inspirasjon<span class="cnt" style="background:#bbf7d0;color:#166534" id="cI">17</span></button>
+          <button class="fb active" data-f="type" data-v="invit" style="background:#fefce8;color:#ca8a04;" onclick="tf(this)">Invitasjon<span class="cnt" style="background:#fef08a;color:#854d0e" id="cV">8</span></button>
         </div>
       </div>
       <div>
-        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Strategisk pilar</p>
-        <div class="flex flex-wrap gap-2">
-          <button class="filter-btn active" data-filter="pilar" data-value="all" style="background:#f1f5f9;color:#475569;" onclick="toggleFilter(this)">Alle<span class="counter-badge" style="background:#e2e8f0;color:#334155" id="countPilarAll">48</span></button>
-          <button class="filter-btn active" data-filter="pilar" data-value="rekr" style="background:#eef2ff;color:#4f46e5;" onclick="toggleFilter(this)">Rekruttering<span class="counter-badge" style="background:#c7d2fe;color:#3730a3" id="countRekr">16</span></button>
-          <button class="filter-btn active" data-filter="pilar" data-value="ret" style="background:#f0fdfa;color:#0d9488;" onclick="toggleFilter(this)">Retention<span class="counter-badge" style="background:#99f6e4;color:#115e59" id="countRet">16</span></button>
-          <button class="filter-btn active" data-filter="pilar" data-value="tilf" style="background:#fff7ed;color:#ea580c;" onclick="toggleFilter(this)">Tilfredshet<span class="counter-badge" style="background:#fed7aa;color:#9a3412" id="countTilf">16</span></button>
+        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Strategisk pilar</p>
+        <div class="flex flex-wrap gap-1.5">
+          <button class="fb active" data-f="pilar" data-v="all" style="background:#f1f5f9;color:#475569;" onclick="tf(this)">Alle <span class="cnt" style="background:#e2e8f0;color:#334155" id="cPA">48</span></button>
+          <button class="fb active" data-f="pilar" data-v="rekr" style="background:#eef2ff;color:#4f46e5;" onclick="tf(this)">Rekruttering<span class="cnt" style="background:#c7d2fe;color:#3730a3" id="cR">16</span></button>
+          <button class="fb active" data-f="pilar" data-v="ret" style="background:#f0fdfa;color:#0d9488;" onclick="tf(this)">Retention<span class="cnt" style="background:#99f6e4;color:#115e59" id="cRe">16</span></button>
+          <button class="fb active" data-f="pilar" data-v="tilf" style="background:#fff7ed;color:#ea580c;" onclick="tf(this)">Tilfredshet<span class="cnt" style="background:#fed7aa;color:#9a3412" id="cT">16</span></button>
         </div>
       </div>
-      <div class="flex items-center justify-between pt-1 border-t border-gray-100">
-        <p class="text-sm text-gray-500">Viser <span class="font-bold text-gray-800" id="visibleCount">48</span> av 48 oppgaver</p>
-        <button class="text-xs text-indigo-600 font-semibold hover:text-indigo-800 cursor-pointer" onclick="resetFilters()">Nullstill filtre</button>
+      <div>
+        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Student-livssyklus</p>
+        <div class="flex flex-wrap gap-1.5">
+          <button class="fb active" data-f="livs" data-v="all" style="background:#f1f5f9;color:#475569;" onclick="tf(this)">Alle <span class="cnt" style="background:#e2e8f0;color:#334155" id="cLA">48</span></button>
+          <button class="fb active" data-f="livs" data-v="Bachelor" style="background:#dbeafe;color:#1d4ed8;" onclick="tf(this)">Bachelor<span class="cnt" style="background:#bfdbfe;color:#1e40af" id="cLB">16</span></button>
+          <button class="fb active" data-f="livs" data-v="Master" style="background:#e0e7ff;color:#4338ca;" onclick="tf(this)">Master<span class="cnt" style="background:#c7d2fe;color:#3730a3" id="cLM">15</span></button>
+          <button class="fb active" data-f="livs" data-v="Prospekt" style="background:#fae8ff;color:#a21caf;" onclick="tf(this)">Prospekt<span class="cnt" style="background:#f0abfc;color:#86198f" id="cLP">8</span></button>
+          <button class="fb active" data-f="livs" data-v="Alumni" style="background:#fef3c7;color:#92400e;" onclick="tf(this)">Alumni<span class="cnt" style="background:#fde68a;color:#78350f" id="cLAl">4</span></button>
+          <button class="fb active" data-f="livs" data-v="-" style="background:#f1f5f9;color:#64748b;" onclick="tf(this)">Uspesifisert<span class="cnt" style="background:#e2e8f0;color:#475569" id="cLU">5</span></button>
+        </div>
       </div>
+    </div>
+    <div class="flex items-center justify-between pt-2 mt-3 border-t border-gray-100">
+      <p class="text-xs text-gray-500">Viser <span class="font-bold text-gray-800" id="vis">48</span> av 48</p>
+      <button class="text-[11px] text-indigo-600 font-semibold hover:text-indigo-800 cursor-pointer" onclick="rf()">Nullstill</button>
     </div>
   </div>
 
   <!-- WHEEL -->
-  <div class="card p-8 mb-6">
+  <div class="card p-8 mb-5">
     <div class="wheel-container" id="wheel">
-      <canvas id="wheelCanvas" width="780" height="780" style="position:absolute;top:0;left:0;"></canvas>
+      <canvas id="wc" width="780" height="780" style="position:absolute;top:0;left:0;"></canvas>
       <div id="dots"></div>
-      <div id="tooltips"></div>
+      <div id="tips"></div>
     </div>
   </div>
 
-  <!-- MONTH OVERVIEW -->
-  <div class="card p-5 mb-6">
-    <h3 class="font-semibold text-gray-800 mb-4">Manedsoversikt - antall synlige utsendelser</h3>
-    <div class="grid grid-cols-12 gap-1 text-center" id="monthGrid"></div>
+  <!-- MONTHS -->
+  <div class="card p-4 mb-5">
+    <h3 class="font-semibold text-gray-800 text-sm mb-3">Manedsoversikt</h3>
+    <div class="grid grid-cols-12 gap-1 text-center" id="mg"></div>
   </div>
 
   <!-- TIMELINE -->
-  <div class="card p-5">
-    <h3 class="font-semibold text-gray-800 mb-4">Detaljert tidslinje per maned</h3>
-    <div id="timelineDetail" class="space-y-4"></div>
+  <div class="card p-4">
+    <h3 class="font-semibold text-gray-800 text-sm mb-3">Tidslinje per maned</h3>
+    <div id="tl" class="space-y-3"></div>
   </div>
 
-  <div class="text-center text-xs text-gray-400 py-6">Generert fra CMP - BI Arshjul 2026 - Mai 2026</div>
+  <div class="text-center text-xs text-gray-400 py-5">Generert fra CMP - BI Arshjul 2026 - Mai 2026</div>
 </div>
 
 <script>
-const tasks = [
-  {m:1, title:"Portal - Soknadsguide", type:"admin", pilar:"rekr", livs:"Prospekt", kanal:"Portal", campus:"Oslo"},
-  {m:1, title:"SFMC - Invitasjon Apen Dag", type:"insp", pilar:"rekr", livs:"Prospekt", kanal:"SFMC", campus:"Oslo"},
-  {m:1, title:"Sosiale Medier - Studentlife Reels", type:"insp", pilar:"rekr", livs:"Prospekt", kanal:"SoMe", campus:"Oslo"},
-  {m:2, title:"SFMC - Hvorfor velge Finans pa BI", type:"insp", pilar:"rekr", livs:"Prospekt", kanal:"SFMC", campus:"Oslo"},
-  {m:2, title:"Portal - Kurskalender var", type:"admin", pilar:"rekr", livs:"Prospekt", kanal:"Portal", campus:"Trondheim"},
-  {m:2, title:"Sosiale Medier - LinkedIN Ads", type:"insp", pilar:"rekr", livs:"Prospekt", kanal:"SoMe", campus:"Stavanger"},
-  {m:3, title:"SFMC - Invitasjon til bedriftsdag", type:"invit", pilar:"rekr", livs:"Prospekt", kanal:"SFMC", campus:"Oslo"},
-  {m:3, title:"SFMC - Kundeintervju video", type:"insp", pilar:"rekr", livs:"Prospekt", kanal:"SFMC", campus:"Oslo"},
-  {m:3, title:"Sosiale Medier - Webinar Teaser", type:"invit", pilar:"rekr", livs:"Prospekt", kanal:"SoMe", campus:"Trondheim"},
-  {m:3, title:"SFMC - SMS Fristpaminnelse", type:"kritisk", pilar:"rekr", livs:"Prospekt", kanal:"SFMC", campus:"Oslo"},
-  {m:4, title:"Canvas - Webinar for navarende", type:"invit", pilar:"rekr", livs:"Bachelor", kanal:"Canvas", campus:"Bergen"},
-  {m:4, title:"Sosiale Medier - Analyst Insights", type:"insp", pilar:"rekr", livs:"Bachelor", kanal:"SoMe", campus:"Oslo"},
-  {m:4, title:"Portal - Karrieremuligheter Finans", type:"insp", pilar:"rekr", livs:"Bachelor", kanal:"Portal", campus:"Oslo"},
-  {m:4, title:"Canvas - Info til Bachelorstudenter", type:"admin", pilar:"rekr", livs:"Bachelor", kanal:"Canvas", campus:"Oslo"},
-  {m:5, title:"SFMC - Nyhetsbrev Master-fokus", type:"insp", pilar:"rekr", livs:"Master", kanal:"SFMC", campus:"Oslo"},
-  {m:5, title:"SFMC - Takk for deltakelse mail", type:"insp", pilar:"rekr", livs:"Master", kanal:"SFMC", campus:"Oslo"},
-  {m:8, title:"SFMC - Velkomstmail", type:"kritisk", pilar:"ret", livs:"-", kanal:"SFMC", campus:"Oslo"},
-  {m:8, title:"SFMC - SMS Velkommen til Campus", type:"kritisk", pilar:"ret", livs:"-", kanal:"SFMC", campus:"Bergen"},
-  {m:8, title:"Portal - Huskeliste for nye", type:"admin", pilar:"ret", livs:"-", kanal:"Portal", campus:"Stavanger"},
-  {m:8, title:"Canvas - Faglig introduksjon", type:"admin", pilar:"ret", livs:"-", kanal:"Canvas", campus:"Trondheim"},
-  {m:8, title:"Portal - Oversikt over lokaler", type:"admin", pilar:"ret", livs:"Bachelor", kanal:"Portal", campus:"Bergen"},
-  {m:9, title:"Sosiale Medier - Bli med i forening", type:"insp", pilar:"ret", livs:"Bachelor", kanal:"SoMe", campus:"Trondheim"},
-  {m:9, title:"Sosiale Medier - Takeover uke", type:"insp", pilar:"ret", livs:"Bachelor", kanal:"SoMe", campus:"Oslo"},
-  {m:9, title:"Portal - Ressursbank for deg", type:"insp", pilar:"ret", livs:"Bachelor", kanal:"Portal", campus:"Digital"},
-  {m:9, title:"Canvas - Studiefremdrift sjekk", type:"admin", pilar:"ret", livs:"Bachelor", kanal:"Canvas", campus:"Digital"},
-  {m:9, title:"SFMC - SMS Viktige frister online", type:"kritisk", pilar:"ret", livs:"Bachelor", kanal:"SFMC", campus:"Digital"},
-  {m:9, title:"SFMC - Online QA Session", type:"admin", pilar:"ret", livs:"Bachelor", kanal:"SFMC", campus:"Digital"},
-  {m:10, title:"SFMC - Invitasjon til Grillfest", type:"invit", pilar:"ret", livs:"Bachelor", kanal:"SFMC", campus:"Oslo"},
-  {m:10, title:"SFMC - Webinar om studieteknikk", type:"insp", pilar:"ret", livs:"Master", kanal:"SFMC", campus:"Oslo"},
-  {m:10, title:"SFMC - Lykke til SMS", type:"insp", pilar:"ret", livs:"Master", kanal:"SFMC", campus:"Oslo"},
-  {m:11, title:"Portal - FAQ Eksamen", type:"admin", pilar:"ret", livs:"Master", kanal:"Portal", campus:"Trondheim"},
-  {m:11, title:"Canvas - Proveeksamen melding", type:"admin", pilar:"ret", livs:"Master", kanal:"Canvas", campus:"Bergen"},
-  {m:3, title:"SFMC - Life in Norway Guide", type:"admin", pilar:"tilf", livs:"Master", kanal:"SFMC", campus:"Oslo"},
-  {m:3, title:"Portal - Visa og Housing info", type:"admin", pilar:"tilf", livs:"Master", kanal:"Portal", campus:"Oslo"},
-  {m:4, title:"Portal - CV-kurs ressurser", type:"admin", pilar:"tilf", livs:"Master", kanal:"Portal", campus:"Stavanger"},
-  {m:4, title:"Sosiale Medier - Bedriftspresentasjoner", type:"invit", pilar:"tilf", livs:"Master", kanal:"SoMe", campus:"Oslo"},
-  {m:5, title:"SFMC - SMS Pamelding karrieredag", type:"kritisk", pilar:"tilf", livs:"Master", kanal:"SFMC", campus:"Oslo"},
-  {m:5, title:"SFMC - Nyhetsbrev Jobbmuligheter", type:"insp", pilar:"tilf", livs:"Master", kanal:"SFMC", campus:"Trondheim"},
-  {m:5, title:"SFMC - SMS Buddy match", type:"kritisk", pilar:"tilf", livs:"Master", kanal:"SFMC", campus:"Oslo"},
-  {m:6, title:"Canvas - Kunngjoring undersokelse", type:"admin", pilar:"tilf", livs:"Bachelor", kanal:"Canvas", campus:"Alle"},
-  {m:6, title:"SFMC - SMS Svar pa undersokelsen", type:"kritisk", pilar:"tilf", livs:"Bachelor", kanal:"SFMC", campus:"Trondheim"},
-  {m:6, title:"SFMC - Nyhetsbrev: Slik ble det", type:"insp", pilar:"tilf", livs:"Bachelor", kanal:"SFMC", campus:"Bergen, Trondheim"},
-  {m:6, title:"Portal - Hva vi endret i ar", type:"admin", pilar:"tilf", livs:"Bachelor", kanal:"Portal / bi.no", campus:"Alle"},
-  {m:10, title:"Sosiale Medier - International Night", type:"invit", pilar:"tilf", livs:"Master", kanal:"SoMe", campus:"Bergen"},
-  {m:11, title:"SFMC - Re-skilling tilbud", type:"insp", pilar:"tilf", livs:"Alumni", kanal:"SFMC", campus:"Stavanger"},
-  {m:11, title:"Portal - Alumni-medlemsskap", type:"admin", pilar:"tilf", livs:"Alumni", kanal:"Portal", campus:"Oslo"},
-  {m:11, title:"Sosiale Medier - Historier fra Alumni", type:"insp", pilar:"tilf", livs:"Alumni", kanal:"SoMe", campus:"Oslo"},
-  {m:12, title:"SFMC - Invitasjon Alumni Galla", type:"invit", pilar:"tilf", livs:"Alumni", kanal:"SFMC", campus:"Oslo"},
+const T=[
+{m:1,t:"Portal - Soknadsguide",y:"admin",p:"rekr",l:"Prospekt",k:"Portal",c:"Oslo"},
+{m:1,t:"SFMC - Invitasjon Apen Dag",y:"insp",p:"rekr",l:"Prospekt",k:"SFMC",c:"Oslo"},
+{m:1,t:"Sosiale Medier - Studentlife Reels",y:"insp",p:"rekr",l:"Prospekt",k:"SoMe",c:"Oslo"},
+{m:2,t:"SFMC - Hvorfor velge Finans pa BI",y:"insp",p:"rekr",l:"Prospekt",k:"SFMC",c:"Oslo"},
+{m:2,t:"Portal - Kurskalender var",y:"admin",p:"rekr",l:"Prospekt",k:"Portal",c:"Trondheim"},
+{m:2,t:"Sosiale Medier - LinkedIN Ads",y:"insp",p:"rekr",l:"Prospekt",k:"SoMe",c:"Stavanger"},
+{m:3,t:"SFMC - Invitasjon til bedriftsdag",y:"invit",p:"rekr",l:"Prospekt",k:"SFMC",c:"Oslo"},
+{m:3,t:"SFMC - Kundeintervju video",y:"insp",p:"rekr",l:"Prospekt",k:"SFMC",c:"Oslo"},
+{m:3,t:"Sosiale Medier - Webinar Teaser",y:"invit",p:"rekr",l:"Prospekt",k:"SoMe",c:"Trondheim"},
+{m:3,t:"SFMC - SMS Fristpaminnelse",y:"kritisk",p:"rekr",l:"Prospekt",k:"SFMC",c:"Oslo"},
+{m:4,t:"Canvas - Webinar for navarende",y:"invit",p:"rekr",l:"Bachelor",k:"Canvas",c:"Bergen"},
+{m:4,t:"Sosiale Medier - Analyst Insights",y:"insp",p:"rekr",l:"Bachelor",k:"SoMe",c:"Oslo"},
+{m:4,t:"Portal - Karrieremuligheter Finans",y:"insp",p:"rekr",l:"Bachelor",k:"Portal",c:"Oslo"},
+{m:4,t:"Canvas - Info til Bachelorstudenter",y:"admin",p:"rekr",l:"Bachelor",k:"Canvas",c:"Oslo"},
+{m:5,t:"SFMC - Nyhetsbrev Master-fokus",y:"insp",p:"rekr",l:"Master",k:"SFMC",c:"Oslo"},
+{m:5,t:"SFMC - Takk for deltakelse mail",y:"insp",p:"rekr",l:"Master",k:"SFMC",c:"Oslo"},
+{m:8,t:"SFMC - Velkomstmail",y:"kritisk",p:"ret",l:"-",k:"SFMC",c:"Oslo"},
+{m:8,t:"SFMC - SMS Velkommen til Campus",y:"kritisk",p:"ret",l:"-",k:"SFMC",c:"Bergen"},
+{m:8,t:"Portal - Huskeliste for nye",y:"admin",p:"ret",l:"-",k:"Portal",c:"Stavanger"},
+{m:8,t:"Canvas - Faglig introduksjon",y:"admin",p:"ret",l:"-",k:"Canvas",c:"Trondheim"},
+{m:8,t:"Portal - Oversikt over lokaler",y:"admin",p:"ret",l:"Bachelor",k:"Portal",c:"Bergen"},
+{m:9,t:"Sosiale Medier - Bli med i forening",y:"insp",p:"ret",l:"Bachelor",k:"SoMe",c:"Trondheim"},
+{m:9,t:"Sosiale Medier - Takeover uke",y:"insp",p:"ret",l:"Bachelor",k:"SoMe",c:"Oslo"},
+{m:9,t:"Portal - Ressursbank for deg",y:"insp",p:"ret",l:"Bachelor",k:"Portal",c:"Digital"},
+{m:9,t:"Canvas - Studiefremdrift sjekk",y:"admin",p:"ret",l:"Bachelor",k:"Canvas",c:"Digital"},
+{m:9,t:"SFMC - SMS Viktige frister online",y:"kritisk",p:"ret",l:"Bachelor",k:"SFMC",c:"Digital"},
+{m:9,t:"SFMC - Online QA Session",y:"admin",p:"ret",l:"Bachelor",k:"SFMC",c:"Digital"},
+{m:10,t:"SFMC - Invitasjon til Grillfest",y:"invit",p:"ret",l:"Bachelor",k:"SFMC",c:"Oslo"},
+{m:10,t:"SFMC - Webinar om studieteknikk",y:"insp",p:"ret",l:"Master",k:"SFMC",c:"Oslo"},
+{m:10,t:"SFMC - Lykke til SMS",y:"insp",p:"ret",l:"Master",k:"SFMC",c:"Oslo"},
+{m:11,t:"Portal - FAQ Eksamen",y:"admin",p:"ret",l:"Master",k:"Portal",c:"Trondheim"},
+{m:11,t:"Canvas - Proveeksamen melding",y:"admin",p:"ret",l:"Master",k:"Canvas",c:"Bergen"},
+{m:3,t:"SFMC - Life in Norway Guide",y:"admin",p:"tilf",l:"Master",k:"SFMC",c:"Oslo"},
+{m:3,t:"Portal - Visa og Housing info",y:"admin",p:"tilf",l:"Master",k:"Portal",c:"Oslo"},
+{m:4,t:"Portal - CV-kurs ressurser",y:"admin",p:"tilf",l:"Master",k:"Portal",c:"Stavanger"},
+{m:4,t:"Sosiale Medier - Bedriftspresentasjoner",y:"invit",p:"tilf",l:"Master",k:"SoMe",c:"Oslo"},
+{m:5,t:"SFMC - SMS Pamelding karrieredag",y:"kritisk",p:"tilf",l:"Master",k:"SFMC",c:"Oslo"},
+{m:5,t:"SFMC - Nyhetsbrev Jobbmuligheter",y:"insp",p:"tilf",l:"Master",k:"SFMC",c:"Trondheim"},
+{m:5,t:"SFMC - SMS Buddy match",y:"kritisk",p:"tilf",l:"Master",k:"SFMC",c:"Oslo"},
+{m:6,t:"Canvas - Kunngjoring undersokelse",y:"admin",p:"tilf",l:"Bachelor",k:"Canvas",c:"Alle"},
+{m:6,t:"SFMC - SMS Svar pa undersokelsen",y:"kritisk",p:"tilf",l:"Bachelor",k:"SFMC",c:"Trondheim"},
+{m:6,t:"SFMC - Nyhetsbrev: Slik ble det",y:"insp",p:"tilf",l:"Bachelor",k:"SFMC",c:"Bergen, Trondheim"},
+{m:6,t:"Portal - Hva vi endret i ar",y:"admin",p:"tilf",l:"Bachelor",k:"Portal / bi.no",c:"Alle"},
+{m:10,t:"Sosiale Medier - International Night",y:"invit",p:"tilf",l:"Master",k:"SoMe",c:"Bergen"},
+{m:11,t:"SFMC - Re-skilling tilbud",y:"insp",p:"tilf",l:"Alumni",k:"SFMC",c:"Stavanger"},
+{m:11,t:"Portal - Alumni-medlemsskap",y:"admin",p:"tilf",l:"Alumni",k:"Portal",c:"Oslo"},
+{m:11,t:"Sosiale Medier - Historier fra Alumni",y:"insp",p:"tilf",l:"Alumni",k:"SoMe",c:"Oslo"},
+{m:12,t:"SFMC - Invitasjon Alumni Galla",y:"invit",p:"tilf",l:"Alumni",k:"SFMC",c:"Oslo"},
 ];
 
-const typeColors = { kritisk:'#ef4444', admin:'#3b82f6', insp:'#22c55e', invit:'#eab308' };
-const typeLabels = { kritisk:'Kritisk info', admin:'Administrativt', insp:'Inspirasjon', invit:'Invitasjon/Event' };
-const pilarLabels = { rekr:'Rekruttering', ret:'Retention', tilf:'Tilfredshet' };
-const months = ['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];
-const monthBg = ['bg-blue-50','bg-blue-50','bg-green-50','bg-green-50','bg-green-50','bg-yellow-50','bg-yellow-50','bg-orange-50','bg-orange-50','bg-red-50','bg-red-50','bg-blue-50'];
+const yC={kritisk:'#ef4444',admin:'#3b82f6',insp:'#22c55e',invit:'#eab308'};
+const yL={kritisk:'Kritisk info',admin:'Administrativt',insp:'Inspirasjon',invit:'Invitasjon/Event'};
+const pL={rekr:'Rekruttering',ret:'Retention',tilf:'Tilfredshet'};
+const mo=['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];
+const mBg=['bg-blue-50','bg-blue-50','bg-green-50','bg-green-50','bg-green-50','bg-yellow-50','bg-yellow-50','bg-orange-50','bg-orange-50','bg-red-50','bg-red-50','bg-blue-50'];
 
-// Filter state
-let activeTypes = new Set(['kritisk','admin','insp','invit']);
-let activePilars = new Set(['rekr','ret','tilf']);
+let aY=new Set(['kritisk','admin','insp','invit']);
+let aP=new Set(['rekr','ret','tilf']);
+let aL=new Set(['Bachelor','Master','Prospekt','Alumni','-']);
 
-const cx = 390, cy = 390;
-const canvas = document.getElementById('wheelCanvas');
-const ctx = canvas.getContext('2d');
+const cx=390,cy=390;
+const cv=document.getElementById('wc');
+const x=cv.getContext('2d');
 
-function drawWheel() {
-  ctx.clearRect(0, 0, 780, 780);
-  ctx.globalAlpha = 0.03;
-  ctx.beginPath(); ctx.arc(cx, cy, 360, 0, Math.PI*2); ctx.fillStyle='#6366f1'; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx, cy, 280, 0, Math.PI*2); ctx.fillStyle='#ffffff'; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx, cy, 280, 0, Math.PI*2); ctx.fillStyle='#14b8a6'; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx, cy, 200, 0, Math.PI*2); ctx.fillStyle='#ffffff'; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx, cy, 200, 0, Math.PI*2); ctx.fillStyle='#f97316'; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx, cy, 120, 0, Math.PI*2); ctx.fillStyle='#ffffff'; ctx.fill();
-  ctx.globalAlpha = 1;
-  ctx.beginPath(); ctx.arc(cx, cy, 360, 0, Math.PI*2); ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1; ctx.stroke();
-  ctx.beginPath(); ctx.arc(cx, cy, 280, 0, Math.PI*2); ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1; ctx.stroke();
-  ctx.beginPath(); ctx.arc(cx, cy, 200, 0, Math.PI*2); ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1; ctx.stroke();
-  ctx.beginPath(); ctx.arc(cx, cy, 120, 0, Math.PI*2); ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1; ctx.stroke();
-  ctx.font = '600 10px Inter, sans-serif'; ctx.textAlign = 'center';
-  ctx.fillStyle = '#6366f1'; ctx.globalAlpha=0.5; ctx.fillText('REKRUTTERING', cx, cy - 232); ctx.globalAlpha=1;
-  ctx.fillStyle = '#14b8a6'; ctx.globalAlpha=0.5; ctx.fillText('RETENTION', cx, cy - 152); ctx.globalAlpha=1;
-  ctx.fillStyle = '#f97316'; ctx.globalAlpha=0.5; ctx.fillText('TILFREDSHET', cx, cy - 72); ctx.globalAlpha=1;
-  for (let i = 0; i < 12; i++) {
-    const angle = (i * 30 - 90) * Math.PI / 180;
-    ctx.beginPath(); ctx.moveTo(cx + Math.cos(angle) * 50, cy + Math.sin(angle) * 50);
-    ctx.lineTo(cx + Math.cos(angle) * 370, cy + Math.sin(angle) * 370);
-    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.stroke();
-  }
-  ctx.font = '700 12px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  for (let i = 0; i < 12; i++) {
-    const angle = ((i * 30) + 15 - 90) * Math.PI / 180;
-    ctx.fillStyle = '#334155';
-    ctx.fillText(months[i].toUpperCase(), cx + Math.cos(angle) * 375, cy + Math.sin(angle) * 375);
-  }
-  ctx.beginPath(); ctx.arc(cx, cy, 50, 0, Math.PI*2); ctx.fillStyle='#4f46e5'; ctx.fill();
-  ctx.font = '700 16px Inter, sans-serif'; ctx.fillStyle = '#ffffff'; ctx.fillText('2026', cx, cy);
+function dw(){
+  x.clearRect(0,0,780,780);
+  x.globalAlpha=0.03;
+  x.beginPath();x.arc(cx,cy,360,0,Math.PI*2);x.fillStyle='#6366f1';x.fill();
+  x.beginPath();x.arc(cx,cy,280,0,Math.PI*2);x.fillStyle='#fff';x.fill();
+  x.beginPath();x.arc(cx,cy,280,0,Math.PI*2);x.fillStyle='#14b8a6';x.fill();
+  x.beginPath();x.arc(cx,cy,200,0,Math.PI*2);x.fillStyle='#fff';x.fill();
+  x.beginPath();x.arc(cx,cy,200,0,Math.PI*2);x.fillStyle='#f97316';x.fill();
+  x.beginPath();x.arc(cx,cy,120,0,Math.PI*2);x.fillStyle='#fff';x.fill();
+  x.globalAlpha=1;
+  [360,280,200,120].forEach(r=>{x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.strokeStyle='#e2e8f0';x.lineWidth=1;x.stroke();});
+  x.font='600 10px Inter,sans-serif';x.textAlign='center';
+  x.fillStyle='#6366f1';x.globalAlpha=.5;x.fillText('REKRUTTERING',cx,cy-232);x.globalAlpha=1;
+  x.fillStyle='#14b8a6';x.globalAlpha=.5;x.fillText('RETENTION',cx,cy-152);x.globalAlpha=1;
+  x.fillStyle='#f97316';x.globalAlpha=.5;x.fillText('TILFREDSHET',cx,cy-72);x.globalAlpha=1;
+  for(let i=0;i<12;i++){const a=(i*30-90)*Math.PI/180;x.beginPath();x.moveTo(cx+Math.cos(a)*50,cy+Math.sin(a)*50);x.lineTo(cx+Math.cos(a)*370,cy+Math.sin(a)*370);x.strokeStyle='#e2e8f0';x.lineWidth=1;x.stroke();}
+  x.font='700 12px Inter,sans-serif';x.textAlign='center';x.textBaseline='middle';
+  for(let i=0;i<12;i++){const a=((i*30)+15-90)*Math.PI/180;x.fillStyle='#334155';x.fillText(mo[i].toUpperCase(),cx+Math.cos(a)*375,cy+Math.sin(a)*375);}
+  x.beginPath();x.arc(cx,cy,50,0,Math.PI*2);x.fillStyle='#4f46e5';x.fill();
+  x.font='700 16px Inter,sans-serif';x.fillStyle='#fff';x.fillText('2026',cx,cy);
 }
 
-// Store dot elements
-const dotElements = [];
-const tooltipElements = [];
-
-function buildDots() {
-  const dotsContainer = document.getElementById('dots');
-  const tooltipsContainer = document.getElementById('tooltips');
-  dotsContainer.innerHTML = '';
-  tooltipsContainer.innerHTML = '';
-  dotElements.length = 0;
-  tooltipElements.length = 0;
-
-  const monthPilarCount = {};
-  tasks.forEach(t => { const k = t.m + '-' + t.pilar; monthPilarCount[k] = (monthPilarCount[k] || 0) + 1; });
-  const monthPilarIndex = {};
-
-  tasks.forEach((t, idx) => {
-    const key = t.m + '-' + t.pilar;
-    if (!monthPilarIndex[key]) monthPilarIndex[key] = 0;
-    const indexInGroup = monthPilarIndex[key]++;
-    const totalInGroup = monthPilarCount[key];
-    let baseR = t.pilar === 'rekr' ? 320 : t.pilar === 'ret' ? 240 : 160;
-    const monthStartAngle = (t.m - 1) * 30 - 90;
-    const spacing = 26 / (totalInGroup + 1);
-    const dotAngle = (monthStartAngle + 2 + spacing * (indexInGroup + 1)) * Math.PI / 180;
-    const rVariation = (indexInGroup % 3 - 1) * 18;
-    const r = baseR + rVariation;
-    const x = cx + Math.cos(dotAngle) * r - 6;
-    const y = cy + Math.sin(dotAngle) * r - 6;
-
-    const dot = document.createElement('div');
-    dot.className = 'task-dot';
-    dot.style.cssText = `left:${x}px;top:${y}px;width:12px;height:12px;background:${typeColors[t.type]};box-shadow:0 0 0 3px ${typeColors[t.type]}33;`;
-    dot.dataset.idx = idx;
-
-    const tooltip = document.createElement('div');
-    tooltip.className = 'tooltip';
-    tooltip.innerHTML = `<strong>${t.title}</strong><br>${typeLabels[t.type]} | ${pilarLabels[t.pilar]}<br>${t.livs} | ${t.kanal} | ${t.campus}`;
-    tooltip.style.cssText = `left:${x + 18}px;top:${y - 10}px;`;
-
-    dot.addEventListener('mouseenter', () => { if (!dot.classList.contains('dimmed')) tooltip.style.display = 'block'; });
-    dot.addEventListener('mouseleave', () => tooltip.style.display = 'none');
-
-    dotsContainer.appendChild(dot);
-    tooltipsContainer.appendChild(tooltip);
-    dotElements.push(dot);
-    tooltipElements.push(tooltip);
+const dE=[],tE=[];
+function bd(){
+  const dc=document.getElementById('dots'),tc=document.getElementById('tips');
+  dc.innerHTML='';tc.innerHTML='';dE.length=0;tE.length=0;
+  const mpc={};T.forEach(t=>{const k=t.m+'-'+t.p;mpc[k]=(mpc[k]||0)+1;});
+  const mpi={};
+  T.forEach((t,i)=>{
+    const k=t.m+'-'+t.p;if(!mpi[k])mpi[k]=0;
+    const ig=mpi[k]++,tg=mpc[k];
+    let br=t.p==='rekr'?320:t.p==='ret'?240:160;
+    const ms=(t.m-1)*30-90,sp=26/(tg+1),da=(ms+2+sp*(ig+1))*Math.PI/180;
+    const rv=(ig%3-1)*18,r=br+rv;
+    const px=cx+Math.cos(da)*r-6,py=cy+Math.sin(da)*r-6;
+    const d=document.createElement('div');d.className='task-dot';
+    d.style.cssText=`left:${px}px;top:${py}px;width:12px;height:12px;background:${yC[t.y]};box-shadow:0 0 0 3px ${yC[t.y]}33;`;
+    const tp=document.createElement('div');tp.className='tooltip';
+    tp.innerHTML=`<strong>${t.t}</strong><br>${yL[t.y]} | ${pL[t.p]}<br>${t.l} | ${t.k} | ${t.c}`;
+    tp.style.cssText=`left:${px+18}px;top:${py-10}px;`;
+    d.addEventListener('mouseenter',()=>{if(!d.classList.contains('dimmed'))tp.style.display='block';});
+    d.addEventListener('mouseleave',()=>tp.style.display='none');
+    dc.appendChild(d);tc.appendChild(tp);dE.push(d);tE.push(tp);
   });
 }
 
-function buildMonthGrid() {
-  const grid = document.getElementById('monthGrid');
-  grid.innerHTML = '';
-  for (let m = 1; m <= 12; m++) {
-    const div = document.createElement('div');
-    div.className = `month-cell p-2 rounded-lg ${monthBg[m-1]}`;
-    div.id = `monthCell${m}`;
-    div.innerHTML = `<p class="text-xs text-gray-500">${months[m-1]}</p><p class="text-lg font-bold text-gray-800" id="mCount${m}">0</p>`;
-    grid.appendChild(div);
-  }
+function bmg(){
+  const g=document.getElementById('mg');g.innerHTML='';
+  for(let m=1;m<=12;m++){const d=document.createElement('div');d.className=`month-cell p-2 rounded-lg ${mBg[m-1]}`;d.id=`mc${m}`;d.innerHTML=`<p class="text-[10px] text-gray-500">${mo[m-1]}</p><p class="text-base font-bold text-gray-800" id="mn${m}">0</p>`;g.appendChild(d);}
 }
 
-function buildTimeline() {
-  const el = document.getElementById('timelineDetail');
-  el.innerHTML = '';
-  for (let m = 1; m <= 12; m++) {
-    const mTasks = tasks.filter(t => t.m === m);
-    if (mTasks.length === 0) continue;
-    const section = document.createElement('div');
-    section.className = 'timeline-section border-l-4 pl-4 pb-2';
-    section.id = `timeline-m${m}`;
-    section.dataset.month = m;
-    let html = `<div class="flex items-center gap-2 mb-2">
-      <span class="font-bold text-gray-800">${months[m-1]} 2026</span>
-      <span class="text-xs px-2 py-0.5 rounded-full" id="timelineBadge${m}">0 utsendelser</span>
-    </div><div class="grid gap-1" id="timelineItems${m}">`;
-    mTasks.forEach((t, i) => {
-      const bgClass = t.type === 'kritisk' ? 'bg-red-50' : t.type === 'admin' ? 'bg-blue-50' : t.type === 'insp' ? 'bg-green-50' : 'bg-yellow-50';
-      const textClass = t.type === 'kritisk' ? 'text-red-700' : t.type === 'admin' ? 'text-blue-700' : t.type === 'insp' ? 'text-green-700' : 'text-yellow-700';
-      const globalIdx = tasks.findIndex(tt => tt === t);
-      html += `<div class="flex items-center gap-2 text-sm py-1 timeline-item" data-gidx="${globalIdx}" id="tl-${globalIdx}">
-        <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${typeColors[t.type]}"></span>
-        <span class="font-medium text-gray-700 flex-1">${t.title}</span>
-        <span class="badge ${bgClass} ${textClass} flex-shrink-0">${typeLabels[t.type]}</span>
-        <span class="text-xs text-gray-400 flex-shrink-0">${t.livs}</span>
-        <span class="text-xs text-gray-400 flex-shrink-0">${t.kanal}</span>
+function btl(){
+  const el=document.getElementById('tl');el.innerHTML='';
+  for(let m=1;m<=12;m++){
+    const mt=T.filter(t=>t.m===m);if(!mt.length)continue;
+    const s=document.createElement('div');s.className='tls border-l-4 pl-3 pb-2';s.id=`tl${m}`;
+    let h=`<div class="flex items-center gap-2 mb-1.5"><span class="font-bold text-gray-800 text-sm">${mo[m-1]} 2026</span><span class="text-[10px] px-2 py-0.5 rounded-full" id="tb${m}">0</span></div><div class="grid gap-0.5" id="ti${m}">`;
+    mt.forEach(t=>{
+      const gi=T.indexOf(t);
+      const bg=t.y==='kritisk'?'bg-red-50':t.y==='admin'?'bg-blue-50':t.y==='insp'?'bg-green-50':'bg-yellow-50';
+      const tc=t.y==='kritisk'?'text-red-700':t.y==='admin'?'text-blue-700':t.y==='insp'?'text-green-700':'text-yellow-700';
+      h+=`<div class="flex items-center gap-2 text-xs py-1" id="r${gi}">
+        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:${yC[t.y]}"></span>
+        <span class="font-medium text-gray-700 flex-1">${t.t}</span>
+        <span class="badge ${bg} ${tc} flex-shrink-0 text-[10px]">${yL[t.y]}</span>
+        <span class="text-[10px] text-gray-400 flex-shrink-0">${t.l}</span>
+        <span class="text-[10px] text-gray-400 flex-shrink-0">${t.k}</span>
       </div>`;
     });
-    html += '</div>';
-    section.innerHTML = html;
-    el.appendChild(section);
+    h+='</div>';s.innerHTML=h;el.appendChild(s);
   }
 }
 
-function isVisible(t) {
-  return activeTypes.has(t.type) && activePilars.has(t.pilar);
-}
+function iv(t){return aY.has(t.y)&&aP.has(t.p)&&aL.has(t.l);}
 
-function applyFilters() {
-  let visCount = 0;
-  const monthVisCount = {};
-
-  tasks.forEach((t, idx) => {
-    const vis = isVisible(t);
-    if (vis) { visCount++; monthVisCount[t.m] = (monthVisCount[t.m] || 0) + 1; }
-    if (dotElements[idx]) {
-      dotElements[idx].classList.toggle('dimmed', !vis);
-      tooltipElements[idx].style.display = 'none';
-    }
-    const tlItem = document.getElementById(`tl-${idx}`);
-    if (tlItem) { tlItem.style.display = vis ? 'flex' : 'none'; }
+function af(){
+  let vc=0;const mc={};
+  T.forEach((t,i)=>{
+    const v=iv(t);if(v){vc++;mc[t.m]=(mc[t.m]||0)+1;}
+    if(dE[i]){dE[i].classList.toggle('dimmed',!v);tE[i].style.display='none';}
+    const r=document.getElementById(`r${i}`);if(r)r.style.display=v?'flex':'none';
   });
-
-  document.getElementById('visibleCount').textContent = visCount;
-
-  // Update month grid
-  for (let m = 1; m <= 12; m++) {
-    const c = monthVisCount[m] || 0;
-    const el = document.getElementById(`mCount${m}`);
-    if (el) el.textContent = c;
-    const cell = document.getElementById(`monthCell${m}`);
-    if (cell) cell.style.opacity = c === 0 ? '0.3' : '1';
+  document.getElementById('vis').textContent=vc;
+  for(let m=1;m<=12;m++){
+    const c=mc[m]||0;
+    const e=document.getElementById(`mn${m}`);if(e)e.textContent=c;
+    const cl=document.getElementById(`mc${m}`);if(cl)cl.style.opacity=c===0?'0.3':'1';
+    const s=document.getElementById(`tl${m}`);if(s){s.classList.toggle('hid',c===0);s.style.borderColor=c>=6?'#ef4444':c>=4?'#eab308':'#22c55e';}
+    const b=document.getElementById(`tb${m}`);if(b){b.textContent=`${c} utsendelsr`;b.className=`text-[10px] px-2 py-0.5 rounded-full ${c>=6?'bg-red-100 text-red-700':c>=4?'bg-yellow-100 text-yellow-700':'bg-green-100 text-green-700'}`;}
   }
-
-  // Update timeline sections
-  for (let m = 1; m <= 12; m++) {
-    const section = document.getElementById(`timeline-m${m}`);
-    if (!section) continue;
-    const c = monthVisCount[m] || 0;
-    section.classList.toggle('hidden-section', c === 0);
-    section.style.borderColor = c >= 6 ? '#ef4444' : c >= 4 ? '#eab308' : '#22c55e';
-    const badge = document.getElementById(`timelineBadge${m}`);
-    if (badge) {
-      badge.textContent = `${c} utsendelser`;
-      badge.className = `text-xs px-2 py-0.5 rounded-full ${c >= 6 ? 'bg-red-100 text-red-700' : c >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`;
-    }
-  }
-
-  // Update counter badges
-  const counts = { kritisk:0, admin:0, insp:0, invit:0, rekr:0, ret:0, tilf:0 };
-  tasks.forEach(t => { if (isVisible(t)) { counts[t.type]++; counts[t.pilar]++; }});
-  document.getElementById('countAll').textContent = visCount;
-  document.getElementById('countKritisk').textContent = counts.kritisk;
-  document.getElementById('countAdmin').textContent = counts.admin;
-  document.getElementById('countInsp').textContent = counts.insp;
-  document.getElementById('countInvit').textContent = counts.invit;
-  document.getElementById('countPilarAll').textContent = visCount;
-  document.getElementById('countRekr').textContent = counts.rekr;
-  document.getElementById('countRet').textContent = counts.ret;
-  document.getElementById('countTilf').textContent = counts.tilf;
+  const cn={kritisk:0,admin:0,insp:0,invit:0,rekr:0,ret:0,tilf:0,Bachelor:0,Master:0,Prospekt:0,Alumni:0,'-':0};
+  T.forEach(t=>{if(iv(t)){cn[t.y]++;cn[t.p]++;cn[t.l]++;}});
+  document.getElementById('cAll').textContent=vc;
+  document.getElementById('cK').textContent=cn.kritisk;
+  document.getElementById('cA').textContent=cn.admin;
+  document.getElementById('cI').textContent=cn.insp;
+  document.getElementById('cV').textContent=cn.invit;
+  document.getElementById('cPA').textContent=vc;
+  document.getElementById('cR').textContent=cn.rekr;
+  document.getElementById('cRe').textContent=cn.ret;
+  document.getElementById('cT').textContent=cn.tilf;
+  document.getElementById('cLA').textContent=vc;
+  document.getElementById('cLB').textContent=cn.Bachelor;
+  document.getElementById('cLM').textContent=cn.Master;
+  document.getElementById('cLP').textContent=cn.Prospekt;
+  document.getElementById('cLAl').textContent=cn.Alumni;
+  document.getElementById('cLU').textContent=cn['-'];
 }
 
-function toggleFilter(btn) {
-  const filterGroup = btn.dataset.filter;
-  const value = btn.dataset.value;
-
-  if (value === 'all') {
-    const set = filterGroup === 'type' ? activeTypes : activePilars;
-    const allValues = filterGroup === 'type' ? ['kritisk','admin','insp','invit'] : ['rekr','ret','tilf'];
-    const allActive = allValues.every(v => set.has(v));
-    if (allActive) {
-      set.clear();
-      document.querySelectorAll(`[data-filter="${filterGroup}"]`).forEach(b => b.classList.remove('active'));
-    } else {
-      allValues.forEach(v => set.add(v));
-      document.querySelectorAll(`[data-filter="${filterGroup}"]`).forEach(b => b.classList.add('active'));
-    }
-  } else {
-    const set = filterGroup === 'type' ? activeTypes : activePilars;
-    if (set.has(value)) { set.delete(value); btn.classList.remove('active'); }
-    else { set.add(value); btn.classList.add('active'); }
-    // Update "Alle" button
-    const allValues = filterGroup === 'type' ? ['kritisk','admin','insp','invit'] : ['rekr','ret','tilf'];
-    const allBtn = document.querySelector(`[data-filter="${filterGroup}"][data-value="all"]`);
-    if (allValues.every(v => set.has(v))) allBtn.classList.add('active');
-    else allBtn.classList.remove('active');
+function tf(b){
+  const fg=b.dataset.f,v=b.dataset.v;
+  const set=fg==='type'?aY:fg==='pilar'?aP:aL;
+  const avs=fg==='type'?['kritisk','admin','insp','invit']:fg==='pilar'?['rekr','ret','tilf']:['Bachelor','Master','Prospekt','Alumni','-'];
+  if(v==='all'){
+    const aa=avs.every(x=>set.has(x));
+    if(aa){set.clear();document.querySelectorAll(`[data-f="${fg}"]`).forEach(b=>b.classList.remove('active'));}
+    else{avs.forEach(x=>set.add(x));document.querySelectorAll(`[data-f="${fg}"]`).forEach(b=>b.classList.add('active'));}
+  }else{
+    if(set.has(v)){set.delete(v);b.classList.remove('active');}
+    else{set.add(v);b.classList.add('active');}
+    const ab=document.querySelector(`[data-f="${fg}"][data-v="all"]`);
+    if(avs.every(x=>set.has(x)))ab.classList.add('active');else ab.classList.remove('active');
   }
-  applyFilters();
+  af();
 }
 
-function resetFilters() {
-  activeTypes = new Set(['kritisk','admin','insp','invit']);
-  activePilars = new Set(['rekr','ret','tilf']);
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.add('active'));
-  applyFilters();
+function rf(){
+  aY=new Set(['kritisk','admin','insp','invit']);
+  aP=new Set(['rekr','ret','tilf']);
+  aL=new Set(['Bachelor','Master','Prospekt','Alumni','-']);
+  document.querySelectorAll('.fb').forEach(b=>b.classList.add('active'));
+  af();
 }
 
-// Init
-drawWheel();
-buildDots();
-buildMonthGrid();
-buildTimeline();
-applyFilters();
+dw();bd();bmg();btl();af();
 </script>
 </body>
 </html>
