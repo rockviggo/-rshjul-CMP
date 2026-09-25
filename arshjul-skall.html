@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yve Årshjul 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ===== DESIGN TOKENS (dark theme, aligned with skeleton variable naming) ===== */
+:root {
+  --color-bg: #0f172a;
+  --color-surface: rgba(30,41,59,0.7);
+  --color-text: #e2e8f0;
+  --color-muted: #94a3b8;
+  --color-muted-dim: #64748b;
+  --color-line: rgba(100,116,139,0.2);
+  --color-accent: #6366f1;
+  --color-accent-mid: #818cf8;
+  --color-accent-light: #a5b4fc;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 20px; --space-5: 32px;
+  --radius-sm: 6px; --radius-md: 12px; --radius-lg: 20px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--color-bg); color: var(--color-text); font-size: 14px; line-height: 1.5; padding: 24px; }
+
+/* ===== HEADER (skeleton: header.wheel-header) ===== */
+header.wheel-header {
+  max-width: 1200px; margin: 0 auto var(--space-4);
+  display: flex; align-items: center; gap: 12px;
+}
+header.wheel-header .logo {
+  width: 36px; height: 36px; background: var(--color-accent);
+  border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+header.wheel-header h1 { font-size: 20px; font-weight: 700; color: white; margin: 0; }
+header.wheel-header h1 .badge { color: var(--color-accent-light); font-size: 13px; font-weight: 500; margin-left: 8px; }
+header.wheel-header .view-name { display: block; color: var(--color-muted); font-size: 12px; margin-top: 2px; }
+
+/* ===== FILTER TOOLBAR (skeleton: .filter-toolbar) ===== */
+.filter-toolbar {
+  max-width: 1200px; margin: 0 auto var(--space-4);
+  background: var(--color-surface); border-radius: var(--radius-lg);
+  border: 1px solid var(--color-line); backdrop-filter: blur(12px); padding: 16px;
+}
+.filter-groups { display: flex; flex-wrap: wrap; gap: 24px; }
+.filter-group {}
+.filter-group-label {
+  font-size: 10px; font-weight: 600; color: var(--color-muted-dim);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+}
+.filter-group-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.fb {
+  padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600;
+  cursor: pointer; transition: all .15s; border: none; user-select: none; line-height: 1.4;
+}
+.fb.active { box-shadow: 0 0 0 1.5px var(--color-bg), 0 0 0 3px currentColor; }
+.fb:hover { opacity: .8; }
+.cnt {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 16px; border-radius: 8px;
+  font-size: 10px; font-weight: 700; margin-left: 3px;
+}
+.filter-summary {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 8px; margin-top: 12px; border-top: 1px solid rgba(100,116,139,0.3);
+}
+.filter-summary p { font-size: 12px; color: var(--color-muted-dim); }
+.filter-summary .count { font-weight: 700; color: var(--color-muted); }
+.filter-summary button {
+  font-size: 11px; color: var(--color-accent-light); font-weight: 600;
+  background: none; border: none; cursor: pointer; font-family: inherit;
+}
+.filter-summary button:hover { color: #c4b5fd; }
+
+/* ===== WHEEL HINT ===== */
+.wheel-hint { text-align: center; max-width: 1200px; margin: 0 auto var(--space-3); }
+@keyframes pulse-hint { 0%,100%{opacity:.5;} 50%{opacity:1;} }
+.hint-pulse { animation: pulse-hint 2.5s ease-in-out infinite; font-size: 12px; color: var(--color-muted-dim); }
+
+/* ===== WHEEL SHELL (skeleton: .wheel-shell) ===== */
+.wheel-shell {
+  max-width: 1200px; margin: 0 auto var(--space-4);
+  background: var(--color-surface); border-radius: var(--radius-lg);
+  border: 1px solid var(--color-line); backdrop-filter: blur(12px);
+  padding: var(--space-5); display: flex; justify-content: center;
+  position: relative; overflow: hidden;
+}
+#wheelInner { position: relative; width: 780px; height: 780px; }
+.task-dot {
+  position: absolute; border-radius: 50%; cursor: pointer;
+  transition: all .3s ease; z-index: 10;
+}
+.task-dot:hover { transform: scale(1.6); z-index: 50; }
+.task-dot.dimmed { opacity: .07; transform: scale(.5); pointer-events: none; }
+.month-label-link {
+  position: absolute; cursor: pointer; z-index: 6; text-decoration: none;
+  transition: all .2s; border-radius: 6px; padding: 2px 6px;
+}
+.month-label-link:hover { background: rgba(99,102,241,0.15); }
+.month-label-link:hover .ml-text { color: var(--color-accent-light) !important; }
+.month-label-link:hover .ml-count { opacity: 1 !important; }
+.month-hit {
+  position: absolute; cursor: pointer; z-index: 5; opacity: 0; transition: opacity .2s;
+}
+.month-hit:hover { opacity: 0.08; background: white; }
+
+/* ===== HOVER CARD (skeleton: .hover-card / tooltip) ===== */
+.hover-card {
+  position: absolute; pointer-events: none;
+  background: #1e293b; border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  font-size: 11px; display: none; max-width: 260px;
+  white-space: normal; line-height: 1.4; z-index: 100; color: white;
+}
+.hover-card.show { display: block; }
+
+/* ===== LEGEND (skeleton: .legend) ===== */
+.legend {
+  max-width: 1200px; margin: 0 auto var(--space-4);
+  display: flex; flex-wrap: wrap; gap: var(--space-2); padding: var(--space-3);
+  background: var(--color-surface); border-radius: var(--radius-md);
+  border: 1px solid var(--color-line); backdrop-filter: blur(12px);
+}
+.legend-item {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--color-text);
+}
+.legend-swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+/* ===== SKIPPED PANEL (skeleton: .skipped-panel) ===== */
+.skipped-panel {
+  max-width: 1200px; margin: 0 auto var(--space-4);
+  border: 1px solid var(--color-line); border-radius: var(--radius-md); overflow: hidden;
+}
+.skipped-panel table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.skipped-panel caption {
+  text-align: left; padding: var(--space-3); background: var(--color-surface);
+  font-weight: 650; border-bottom: 1px solid var(--color-line); color: var(--color-text);
+}
+.skipped-panel th, .skipped-panel td {
+  padding: var(--space-2) var(--space-3); text-align: left; border-bottom: 1px solid var(--color-line);
+}
+.skipped-panel thead th {
+  background: var(--color-surface); font-size: 11px;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted);
+}
+.skipped-panel tbody td { color: var(--color-text); }
+.empty-row td { text-align: center; color: var(--color-muted); font-style: italic; padding: var(--space-4); }
+
+/* ===== FOOTER (skeleton: footer.wheel-footer) ===== */
+footer.wheel-footer {
+  max-width: 1200px; margin: 0 auto;
+  padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-line);
+  font-size: 12px; color: var(--color-muted-dim);
+  display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: space-between;
+}
+
+/* ===== ZOOM OVERLAY ===== */
+#zoomOverlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 200; display: none; opacity: 0; transition: opacity .4s ease;
+}
+#zoomOverlay.show { display: flex; opacity: 1; }
+#zoomBg {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(15,23,42,0.92); backdrop-filter: blur(16px);
+}
+#zoomContent {
+  position: relative; z-index: 1; width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center; padding: 20px;
+}
+#zoomHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; max-width: 1100px; margin-bottom: 16px;
+}
+#zoomClose {
+  background: rgba(100,116,139,0.3); border: 1px solid rgba(148,163,184,0.3);
+  color: var(--color-text); border-radius: var(--radius-md); padding: 8px 20px;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; font-family: inherit;
+}
+#zoomClose:hover { background: rgba(100,116,139,0.5); }
+#zoomCanvas { position: relative; flex: 1; width: 100%; max-width: 1100px; }
+#zoomSvg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+.zoom-popup {
+  position: absolute; border-radius: var(--radius-md); padding: 10px 14px;
+  font-size: 12px; font-weight: 500; line-height: 1.5; z-index: 4;
+  pointer-events: auto; max-width: 240px;
+  border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.zoom-dot {
+  position: absolute; border-radius: 50%; z-index: 5;
+  box-shadow: 0 0 12px rgba(255,255,255,0.2);
+}
+.badge-sm {
+  display: inline-block; padding: 1px 6px; border-radius: 6px;
+  font-size: 9px; font-weight: 700; margin-left: 4px; vertical-align: middle;
+}
+
+
+/* ===== ÅRSVELGER ===== */
+.year-nav {
+  max-width: 1200px; margin: 0 auto var(--space-3);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.year-btn {
+  padding: 6px 16px; border-radius: 99px; font-size: 13px; font-weight: 700;
+  cursor: pointer; border: 1px solid var(--color-line); background: var(--color-surface);
+  color: var(--color-muted); font-family: inherit; transition: all .15s;
+}
+.year-btn:hover { color: var(--color-text); border-color: var(--color-accent); }
+.year-btn.active { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
+.year-btn .yc { font-size: 10px; opacity: .75; margin-left: 5px; font-weight: 600; }
+.year-sep { width: 1px; height: 22px; background: var(--color-line); margin: 0 4px; }
+.year-btn.rolling.active { background: #0d9488; border-color: #0d9488; }
+
+/* ===== TRENGER MÅL-PANEL ===== */
+.attn-panel { max-width: 1200px; margin: 0 auto var(--space-4);
+  border: 1px solid var(--color-line); border-radius: var(--radius-md); overflow: hidden; }
+.attn-head { padding: var(--space-3); background: var(--color-surface);
+  border-bottom: 1px solid var(--color-line); display: flex; align-items: center;
+  justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.attn-head h3 { font-size: 14px; font-weight: 650; color: var(--color-text); margin: 0; }
+.attn-head p { font-size: 12px; color: var(--color-muted-dim); margin: 3px 0 0; }
+.attn-pill { padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 700;
+  background: #78350f; color: #fcd34d; white-space: nowrap; }
+.attn-scroll { max-height: 320px; overflow-y: auto; }
+.attn-panel table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.attn-panel th, .attn-panel td { padding: var(--space-2) var(--space-3);
+  text-align: left; border-bottom: 1px solid var(--color-line); }
+.attn-panel thead th { background: var(--color-surface); font-size: 11px; position: sticky; top: 0;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted); z-index: 2; }
+.attn-panel tbody td { color: var(--color-text); }
+.attn-panel tbody tr:hover { background: rgba(99,102,241,0.06); }
+.attn-date { color: var(--color-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.attn-status { font-size: 11px; padding: 2px 8px; border-radius: 99px;
+  background: #1e293b; color: #94a3b8; white-space: nowrap; }
+.attn-status.overdue { background: #450a0a; color: #fca5a5; }
+.attn-status.progress { background: #172554; color: #93c5fd; }
+.attn-empty { text-align: center; color: var(--color-muted); font-style: italic; padding: var(--space-4); }
+
+@media (max-width: 768px) {
+  body { padding: 12px; }
+  .filter-groups { gap: 12px; }
+  .wheel-shell { padding: var(--space-3); }
+  #wheelInner { width: 100%; height: auto; aspect-ratio: 1; }
+  footer.wheel-footer { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER (skeleton: header.wheel-header) ===== -->
+<header class="wheel-header">
+  <div class="logo">Yve</div>
+  <div>
+    <h1>Årshjul <span id="yearDisplay"></span> <span class="badge">Eksperimentell</span></h1>
+    <span class="view-name" id="viewName"></span>
+  </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main>
+
+  <!-- Filter toolbar (skeleton: section.filter-toolbar) — built by JS from config -->
+  <section class="filter-toolbar" aria-label="Årshjul-filtre" id="filterToolbar"></section>
+
+  <!-- Årsvelger -->
+  <nav class="year-nav" id="yearNav" aria-label="Velg år"></nav>
+
+  <!-- Wheel hint -->
+  <div class="wheel-hint">
+    <p class="hint-pulse">Klikk på en måned i hjulet for mer informasjon</p>
+  </div>
+
+  <!-- Wheel (skeleton: section.wheel-shell) — Canvas-based, interactive -->
+  <section class="wheel-shell" aria-label="Årshjul-diagram" id="wheelWrap">
+    <div id="wheelInner">
+      <canvas id="wc" width="780" height="780" style="position:absolute;top:0;left:0;"
+              role="img" aria-label="Årlig kampanje- og oppgavehjul"></canvas>
+      <div id="dots"></div>
+      <div id="tips"></div>
+      <div id="hitAreas"></div>
+      <div id="monthLinks"></div>
+    </div>
+  </section>
+
+  <!-- Legend (skeleton: section.legend) — built by JS from config -->
+  <section class="legend" aria-label="Kategoriforklaring" id="legendSection">
+    <span class="legend-item">Ingen kategorier å vise</span>
+  </section>
+
+  <!-- Oppgaver som mangler Mål -->
+  <section class="attn-panel" aria-label="Oppgaver som mangler Mål" id="attnSection">
+    <div class="attn-head">
+      <div>
+        <h3>Mangler Mål – vises ikke i hjulet</h3>
+        <p id="attnSub">Aktive oppgaver uten utfylt Mål-felt. Fyll inn Mål i CMP, så kommer de med.</p>
+      </div>
+      <span class="attn-pill" id="attnCount">0</span>
+    </div>
+    <div class="attn-scroll">
+      <table>
+        <thead><tr><th scope="col">Dato</th><th scope="col">Tittel</th><th scope="col">Merkevare</th><th scope="col">Status</th></tr></thead>
+        <tbody id="attnBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER (skeleton: footer.wheel-footer) ===== -->
+<footer class="wheel-footer">
+  <span>Oppgaver plassert: <strong id="totalPlaced">0</strong></span>
+  <span>Totalt: <strong id="totalItems">0</strong></span>
+  <span>Generert <span id="footerTimestamp"></span></span>
+</footer>
+
+<!-- ===== ZOOM OVERLAY ===== -->
+<div id="zoomOverlay">
+  <div id="zoomBg" onclick="closeZoom()"></div>
+  <div id="zoomContent">
+    <div id="zoomHeader">
+      <div>
+        <h2 style="font-size:24px;font-weight:700;color:white;margin:0" id="zoomTitle"></h2>
+        <p style="font-size:14px;color:var(--color-muted);margin-top:4px" id="zoomSub"></p>
+      </div>
+      <button id="zoomClose" onclick="closeZoom()">Tilbake til årshjulet</button>
+    </div>
+    <div id="zoomCanvas">
+      <svg id="zoomSvg"></svg>
+      <div id="zoomDots"></div>
+      <div id="zoomPopups"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===========================================================================
+ *  KONFIGURASJON  --  ENESTE LINJE SOM SKAL REDIGERES MANUELT
+ * =========================================================================== */
+const DATA_URL = 'https://oqspxw.files.cmp.optimizely.com/download/c0966f34b8c211f1be863ae1765b5623';
+const CACHE_BUST = true;
+const SCHEMA_VERSION = 2;
+
+/* ===========================================================================
+ *  DATA + TILSTAND
+ * =========================================================================== */
+let SAVED_VIEW_NAME = '', TIMESTAMP = '';
+let ALL_TASKS = [], NEEDS_GOAL = [], YEARS = [];
+let TYPE_CONFIG = {}, PILAR_CONFIG = {}, LIFECYCLE_CONFIG = {};
+
+let VIEW_MODE = 'year';        // 'year' | 'rolling'
+let ACTIVE_YEAR = '';
+let SLOTS = [];                // 12 stk { y, m, label, isNow }
+
+const MONTHS = ['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];
+const CX = 390, CY = 390, INNER_CIRCLE_R = 120, CENTER_R = 50;
+
+let activeTypes = new Set(), activePilars = new Set(), activeLifecycles = new Set();
+const dotEls = [], tipEls = [];
+let TASKS = [];                // oppgaver i gjeldende visning
+
+const FIELD_MAP  = { type:'y', pilar:'p', livs:'l' };
+const CONFIG_MAP = () => ({ type:TYPE_CONFIG, pilar:PILAR_CONFIG, livs:LIFECYCLE_CONFIG });
+const SET_MAP    = () => ({ type:activeTypes, pilar:activePilars, livs:activeLifecycles });
+
+function esc(s){ const e=document.createElement('span'); e.textContent=s||''; return e.innerHTML; }
+function isVisible(t){ return activeTypes.has(t.y) && activePilars.has(t.p) && activeLifecycles.has(t.l); }
+
+/* ===========================================================================
+ *  TIDSAKSE  --  bestemmer hvilke 12 felt hjulet viser
+ * =========================================================================== */
+function buildSlots() {
+  SLOTS = [];
+  if (VIEW_MODE === 'rolling') {
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      SLOTS.push({
+        y: d.getFullYear(), m: d.getMonth() + 1,
+        label: MONTHS[d.getMonth()] + (d.getMonth() === 0 || i === 0 ? " '" + String(d.getFullYear()).slice(2) : ''),
+        isNow: i === 0
+      });
+    }
+  } else {
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      SLOTS.push({
+        y: parseInt(ACTIVE_YEAR, 10), m: i + 1, label: MONTHS[i],
+        isNow: parseInt(ACTIVE_YEAR,10) === now.getFullYear() && i === now.getMonth()
+      });
+    }
+  }
+}
+
+function slotOf(t) {
+  const [ty, tm] = t.ym.split('-').map(Number);
+  return SLOTS.findIndex(s => s.y === ty && s.m === tm);
+}
+
+function applyView() {
+  buildSlots();
+  TASKS = ALL_TASKS.filter(t => slotOf(t) >= 0).map(t => ({ ...t, slot: slotOf(t) }));
+  renderWheel();
+  renderAttn();
+  updateViewLabel();
+}
+
+function updateViewLabel() {
+  const el = document.getElementById('yearDisplay');
+  const now = new Date();
+  if (VIEW_MODE === 'rolling') {
+    const last = SLOTS[11];
+    el.textContent = MONTHS[now.getMonth()] + ' ' + now.getFullYear() + ' – ' + MONTHS[last.m-1] + ' ' + last.y;
+  } else {
+    el.textContent = ACTIVE_YEAR;
+  }
+  document.querySelectorAll('.year-btn').forEach(b => {
+    const on = (b.dataset.mode === 'rolling') ? VIEW_MODE === 'rolling'
+             : (VIEW_MODE === 'year' && b.dataset.year === ACTIVE_YEAR);
+    b.classList.toggle('active', on);
+  });
+}
+
+/* ===========================================================================
+ *  ÅRSVELGER
+ * =========================================================================== */
+function buildYearNav() {
+  const nav = document.getElementById('yearNav'); nav.innerHTML = '';
+  YEARS.forEach(y => {
+    const n = ALL_TASKS.filter(t => t.yr === y).length;
+    const b = document.createElement('button');
+    b.className = 'year-btn'; b.dataset.year = y; b.dataset.mode = 'year';
+    b.innerHTML = esc(y) + '<span class="yc">' + n + '</span>';
+    b.onclick = () => { VIEW_MODE = 'year'; ACTIVE_YEAR = y; applyView(); };
+    nav.appendChild(b);
+  });
+  nav.appendChild(Object.assign(document.createElement('span'), { className: 'year-sep' }));
+  const r = document.createElement('button');
+  r.className = 'year-btn rolling'; r.dataset.mode = 'rolling';
+  r.innerHTML = 'Neste 12 mnd';
+  r.onclick = () => { VIEW_MODE = 'rolling'; applyView(); };
+  nav.appendChild(r);
+}
+
+/* ===========================================================================
+ *  TEGN HJULET
+ * =========================================================================== */
+const canvas = document.getElementById('wc');
+const ctx = canvas.getContext('2d');
+
+function drawWheel() {
+  ctx.clearRect(0,0,780,780);
+  const sorted = Object.entries(PILAR_CONFIG).sort((a,b) => b[1].ringRadius - a[1].ringRadius);
+  const bounds = sorted.map(([,c]) => c.ringRadius).concat([INNER_CIRCLE_R]);
+
+  ctx.globalAlpha = .04;
+  sorted.forEach(([,cfg], i) => {
+    ctx.beginPath(); ctx.arc(CX,CY,cfg.ringRadius,0,Math.PI*2);
+    ctx.fillStyle = cfg.ringColor || cfg.color; ctx.fill();
+    ctx.beginPath(); ctx.arc(CX,CY,bounds[i+1],0,Math.PI*2);
+    ctx.fillStyle = '#0f172a'; ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  bounds.forEach(r => {
+    ctx.beginPath(); ctx.arc(CX,CY,r,0,Math.PI*2);
+    ctx.strokeStyle = 'rgba(148,163,184,0.15)'; ctx.lineWidth = 1; ctx.stroke();
+  });
+
+  ctx.font = '600 10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.globalAlpha = .4;
+  sorted.forEach(([,cfg], i) => {
+    ctx.fillStyle = cfg.color;
+    ctx.fillText(cfg.label.toUpperCase(), CX, CY - (bounds[i+1] - 48));
+  });
+  ctx.globalAlpha = 1;
+
+  const outerR = bounds[0] + 10;
+  for (let i = 0; i < 12; i++) {
+    const a = (i*30 - 90) * Math.PI/180;
+    ctx.beginPath();
+    ctx.moveTo(CX + Math.cos(a)*CENTER_R, CY + Math.sin(a)*CENTER_R);
+    ctx.lineTo(CX + Math.cos(a)*outerR,  CY + Math.sin(a)*outerR);
+    ctx.strokeStyle = 'rgba(148,163,184,0.12)'; ctx.lineWidth = 1; ctx.stroke();
+  }
+
+  /* marker inneværende måned */
+  const nowSlot = SLOTS.findIndex(s => s.isNow);
+  if (nowSlot >= 0) {
+    const a1 = (nowSlot*30 - 90) * Math.PI/180, a2 = ((nowSlot+1)*30 - 90) * Math.PI/180;
+    ctx.beginPath();
+    ctx.moveTo(CX + Math.cos(a1)*CENTER_R, CY + Math.sin(a1)*CENTER_R);
+    ctx.lineTo(CX + Math.cos(a1)*outerR,  CY + Math.sin(a1)*outerR);
+    ctx.arc(CX, CY, outerR, a1, a2);
+    ctx.lineTo(CX + Math.cos(a2)*CENTER_R, CY + Math.sin(a2)*CENTER_R);
+    ctx.arc(CX, CY, CENTER_R, a2, a1, true);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(99,102,241,0.07)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(129,140,248,0.35)'; ctx.lineWidth = 1; ctx.stroke();
+  }
+
+  ctx.beginPath(); ctx.arc(CX,CY,CENTER_R,0,Math.PI*2);
+  ctx.fillStyle = '#4f46e5'; ctx.fill();
+  ctx.font = '700 15px Inter, sans-serif'; ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+  ctx.fillText(VIEW_MODE === 'rolling' ? '12 mnd' : ACTIVE_YEAR, CX, CY + 5);
+}
+
+/* ===========================================================================
+ *  PUNKTER OG HOVER-KORT
+ * =========================================================================== */
+function buildDots() {
+  const dc = document.getElementById('dots'), tc = document.getElementById('tips');
+  dc.innerHTML = ''; tc.innerHTML = ''; dotEls.length = 0; tipEls.length = 0;
+
+  const cnt = {}; TASKS.forEach(t => { const k = t.slot+'-'+t.p; cnt[k] = (cnt[k]||0)+1; });
+  const idx = {};
+
+  TASKS.forEach(t => {
+    const k = t.slot+'-'+t.p; if (!idx[k]) idx[k] = 0;
+    const ig = idx[k]++, tg = cnt[k];
+    const pc = PILAR_CONFIG[t.p], yc = TYPE_CONFIG[t.y];
+    if (!pc || !yc) { dotEls.push(null); tipEls.push(null); return; }
+
+    const ms = t.slot*30 - 90, sp = 26/(tg+1);
+    const da = (ms + 2 + sp*(ig+1)) * Math.PI/180;
+    const r  = pc.radius + (ig % 3 - 1) * 18;
+    const px = CX + Math.cos(da)*r - 5, py = CY + Math.sin(da)*r - 5;
+
+    const d = document.createElement('div'); d.className = 'task-dot';
+    d.style.cssText = `left:${px}px;top:${py}px;width:10px;height:10px;background:${yc.color};box-shadow:0 0 8px ${yc.color}66;`;
+
+    const lc = LIFECYCLE_CONFIG[t.l];
+    const maal = t.g
+      ? `<br><span style="color:#94a3b8">Mål:</span> ${esc(t.g)}` +
+        (t.pg && t.g !== t.pg ? `<br><span style="color:#94a3b8">Plassert etter:</span> <strong>${esc(t.pg)}</strong>` : '')
+      : '';
+    const naar = `<br><span style="color:#94a3b8">Når:</span> ${esc(t.ym)}` + (t.st ? ` · ${esc(t.st)}` : '');
+    const tp = document.createElement('div'); tp.className = 'hover-card';
+    tp.innerHTML = `<strong>${esc(t.t)}</strong><br>${esc(yc.label)} | ${esc(pc.label)}<br>${esc(lc?.label||t.l)} | ${esc(t.k)} | ${esc(t.c)}${naar}${maal}`;
+    tp.style.cssText = `left:${px+16}px;top:${py-10}px;`;
+
+    d.addEventListener('mouseenter', () => { if (!d.classList.contains('dimmed')) tp.classList.add('show'); });
+    d.addEventListener('mouseleave', () => tp.classList.remove('show'));
+    dc.appendChild(d); tc.appendChild(tp); dotEls.push(d); tipEls.push(tp);
+  });
+}
+
+function buildHitAreas() {
+  const ha = document.getElementById('hitAreas'); ha.innerHTML = '';
+  for (let i = 0; i < 12; i++) {
+    const a = ((i*30 + 15) - 90) * Math.PI/180;
+    const hx = CX + Math.cos(a)*210 - 40, hy = CY + Math.sin(a)*210 - 40;
+    const d = document.createElement('div'); d.className = 'month-hit';
+    d.style.cssText = `left:${hx}px;top:${hy}px;width:80px;height:80px;border-radius:50%;`;
+    d.addEventListener('click', () => openZoom(i));
+    ha.appendChild(d);
+  }
+}
+
+function buildMonthLinks() {
+  const ml = document.getElementById('monthLinks'); ml.innerHTML = '';
+  for (let i = 0; i < 12; i++) {
+    const a = ((i*30) + 15 - 90) * Math.PI/180;
+    const lx = CX + Math.cos(a)*375, ly = CY + Math.sin(a)*375;
+    const n = TASKS.filter(t => t.slot === i && isVisible(t)).length;
+    const el = document.createElement('a'); el.className = 'month-label-link'; el.href = '#'; el.id = 'ml'+i;
+    el.addEventListener('click', e => { e.preventDefault(); openZoom(i); });
+    el.style.cssText = `left:${lx}px;top:${ly}px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;`;
+    const hl = SLOTS[i].isNow;
+    el.innerHTML = `<span class="ml-text" style="font-weight:700;font-size:12px;color:${hl?'var(--color-accent-light)':'var(--color-muted)'};transition:color .2s;">${esc(SLOTS[i].label.toUpperCase())}</span>
+      <span class="ml-count" style="font-size:9px;color:var(--color-muted-dim);opacity:.6;transition:opacity .2s;">${n||''}</span>`;
+    ml.appendChild(el);
+  }
+}
+
+/* ===========================================================================
+ *  FILTRE
+ * =========================================================================== */
+function buildFilters() {
+  const tb = document.getElementById('filterToolbar'); tb.innerHTML = '';
+  const gd = document.createElement('div'); gd.className = 'filter-groups';
+  const dims = [
+    { key:'type',  label:'Merkevare', config:TYPE_CONFIG },
+    { key:'pilar', label:'Mål',       config:PILAR_CONFIG },
+    { key:'livs',  label:'Segment',   config:LIFECYCLE_CONFIG }
+  ];
+  dims.forEach(dim => {
+    const g = document.createElement('div'); g.className = 'filter-group';
+    g.innerHTML = `<p class="filter-group-label">${dim.label}</p>`;
+    const bd = document.createElement('div'); bd.className = 'filter-group-buttons';
+    const all = document.createElement('button'); all.className = 'fb active';
+    all.dataset.f = dim.key; all.dataset.v = 'all';
+    all.style.cssText = 'background:#1e293b;color:#94a3b8;';
+    all.onclick = function(){ toggleFilter(this); };
+    all.innerHTML = `Alle<span class="cnt" data-count-key="${dim.key}_all" style="background:#334155;color:#cbd5e1">${TASKS.length}</span>`;
+    bd.appendChild(all);
+    const field = FIELD_MAP[dim.key];
+    Object.entries(dim.config).forEach(([k,cfg]) => {
+      const b = document.createElement('button'); b.className = 'fb active';
+      b.dataset.f = dim.key; b.dataset.v = k;
+      b.style.cssText = `background:${cfg.filterBg};color:${cfg.color};`;
+      b.onclick = function(){ toggleFilter(this); };
+      b.innerHTML = `${esc(cfg.label||k)}<span class="cnt" data-count-key="${dim.key}_${k}" style="background:${cfg.cntBg};color:${cfg.cntColor}">${TASKS.filter(t=>t[field]===k).length}</span>`;
+      bd.appendChild(b);
+    });
+    g.appendChild(bd); gd.appendChild(g);
+  });
+  tb.appendChild(gd);
+  const sm = document.createElement('div'); sm.className = 'filter-summary';
+  sm.innerHTML = `<p>Viser <span class="count" id="vis">${TASKS.length}</span> av ${TASKS.length}</p><button onclick="resetFilters()">Nullstill</button>`;
+  tb.appendChild(sm);
+}
+
+function buildLegend() {
+  const el = document.getElementById('legendSection'); el.innerHTML = '';
+  Object.values(TYPE_CONFIG).forEach(c => {
+    const i = document.createElement('span'); i.className = 'legend-item';
+    i.innerHTML = `<span class="legend-swatch" style="background:${c.color}"></span>${esc(c.label)}`;
+    el.appendChild(i);
+  });
+  Object.values(PILAR_CONFIG).forEach(c => {
+    const i = document.createElement('span'); i.className = 'legend-item';
+    i.innerHTML = `<span class="legend-swatch" style="background:${c.color};border-radius:50%"></span>${esc(c.label)}`;
+    el.appendChild(i);
+  });
+}
+
+function applyFilters() {
+  let vc = 0;
+  TASKS.forEach((t,i) => {
+    const v = isVisible(t); if (v) vc++;
+    if (dotEls[i]) { dotEls[i].classList.toggle('dimmed', !v); tipEls[i]?.classList.remove('show'); }
+  });
+  const ve = document.getElementById('vis'); if (ve) ve.textContent = vc;
+  document.getElementById('totalPlaced').textContent = vc;
+  document.getElementById('totalItems').textContent = TASKS.length;
+  const counts = {};
+  TASKS.forEach(t => { if (!isVisible(t)) return;
+    Object.entries(FIELD_MAP).forEach(([d,f]) => { counts[`${d}_${t[f]}`] = (counts[`${d}_${t[f]}`]||0)+1; }); });
+  document.querySelectorAll('.cnt[data-count-key]').forEach(el => {
+    const k = el.dataset.countKey;
+    el.textContent = k.endsWith('_all') ? vc : (counts[k]||0);
+  });
+  for (let i = 0; i < 12; i++) {
+    const n = TASKS.filter(t => t.slot === i && isVisible(t)).length;
+    const el = document.getElementById('ml'+i);
+    if (el) { const c = el.querySelector('.ml-count'); if (c) c.textContent = n||''; }
+  }
+}
+
+function toggleFilter(btn) {
+  const fg = btn.dataset.f, v = btn.dataset.v;
+  const set = SET_MAP()[fg], keys = Object.keys(CONFIG_MAP()[fg]);
+  if (v === 'all') {
+    if (keys.every(x => set.has(x))) { set.clear(); document.querySelectorAll(`[data-f="${fg}"]`).forEach(b=>b.classList.remove('active')); }
+    else { keys.forEach(x=>set.add(x)); document.querySelectorAll(`[data-f="${fg}"]`).forEach(b=>b.classList.add('active')); }
+  } else {
+    if (set.has(v)) { set.delete(v); btn.classList.remove('active'); }
+    else { set.add(v); btn.classList.add('active'); }
+    const ab = document.querySelector(`[data-f="${fg}"][data-v="all"]`);
+    if (keys.every(x => set.has(x))) ab?.classList.add('active'); else ab?.classList.remove('active');
+  }
+  applyFilters();
+}
+
+function resetFilters() {
+  activeTypes = new Set(Object.keys(TYPE_CONFIG));
+  activePilars = new Set(Object.keys(PILAR_CONFIG));
+  activeLifecycles = new Set(Object.keys(LIFECYCLE_CONFIG));
+  document.querySelectorAll('.fb').forEach(b => b.classList.add('active'));
+  applyFilters();
+}
+
+/* ===========================================================================
+ *  PANEL: MANGLER MÅL
+ * =========================================================================== */
+function renderAttn() {
+  const body = document.getElementById('attnBody');
+  const from = SLOTS[0], to = SLOTS[11];
+  const lo = `${from.y}-${String(from.m).padStart(2,'0')}`;
+  const hi = `${to.y}-${String(to.m).padStart(2,'0')}`;
+  const rows = NEEDS_GOAL.filter(r => { const ym = r.d.slice(0,7); return ym >= lo && ym <= hi; });
+
+  document.getElementById('attnCount').textContent = rows.length;
+  document.getElementById('attnSub').textContent =
+    rows.length
+      ? `Aktive oppgaver i perioden uten utfylt Mål. Fyll inn Mål i CMP, så kommer de med i hjulet.`
+      : `Ingen oppgaver mangler Mål i denne perioden.`;
+
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="4" class="attn-empty">Alle aktive oppgaver i perioden er klassifisert</td></tr>';
+    return;
+  }
+  body.innerHTML = '';
+  rows.forEach(r => {
+    const yc = TYPE_CONFIG[r.y];
+    const cls = r.s === 'Overdue' ? ' overdue' : (r.s === 'In Progress' ? ' progress' : '');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="attn-date">${esc(r.d)}</td><td>${esc(r.t)}</td>`
+      + `<td><span style="color:${yc?yc.color:'#94a3b8'}">${esc(yc?yc.label:r.y)}</span></td>`
+      + `<td><span class="attn-status${cls}">${esc(r.s)}</span></td>`;
+    body.appendChild(tr);
+  });
+}
+
+/* ===========================================================================
+ *  ZOOM
+ * =========================================================================== */
+function openZoom(slot) {
+  const items = TASKS.filter(t => t.slot === slot && isVisible(t));
+  if (!items.length) return;
+  const ov = document.getElementById('zoomOverlay');
+  document.getElementById('zoomTitle').textContent = SLOTS[slot].label + ' ' + SLOTS[slot].y;
+  document.getElementById('zoomSub').textContent = items.length + ' aktivitet' + (items.length>1?'er':'');
+  const zC = document.getElementById('zoomCanvas');
+  const dotsC = document.getElementById('zoomDots'), popC = document.getElementById('zoomPopups');
+  const svg = document.getElementById('zoomSvg');
+  dotsC.innerHTML=''; popC.innerHTML=''; svg.innerHTML='';
+  ov.style.display='flex'; requestAnimationFrame(()=>ov.classList.add('show'));
+
+  requestAnimationFrame(() => {
+    const rect = zC.getBoundingClientRect(), W = rect.width, H = rect.height;
+    const ccx = W/2, ccy = H/2, maxR = Math.min(W,H)/2 - 20;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const a1 = (slot*30 - 90)*Math.PI/180, a2 = ((slot+1)*30 - 90)*Math.PI/180;
+
+    const sp = document.createElementNS('http://www.w3.org/2000/svg','path');
+    const r1 = maxR*.12, r2 = maxR*.95;
+    sp.setAttribute('d', `M${ccx+Math.cos(a1)*r1},${ccy+Math.sin(a1)*r1} L${ccx+Math.cos(a1)*r2},${ccy+Math.sin(a1)*r2} A${r2},${r2} 0 0,1 ${ccx+Math.cos(a2)*r2},${ccy+Math.sin(a2)*r2} L${ccx+Math.cos(a2)*r1},${ccy+Math.sin(a2)*r1} A${r1},${r1} 0 0,0 ${ccx+Math.cos(a1)*r1},${ccy+Math.sin(a1)*r1}`);
+    sp.setAttribute('fill','rgba(99,102,241,0.06)'); sp.setAttribute('stroke','rgba(99,102,241,0.2)'); sp.setAttribute('stroke-width','1.5');
+    svg.appendChild(sp);
+
+    const entries = Object.entries(PILAR_CONFIG), ratios = [.82,.62,.42,.25];
+    const pr = {}; entries.forEach(([k],i) => pr[k] = ratios[i] || .5);
+    const amid = (a1+a2)/2;
+    entries.forEach(([k,cfg]) => {
+      const rr = maxR*pr[k], tx = document.createElementNS('http://www.w3.org/2000/svg','text');
+      tx.setAttribute('x', ccx+Math.cos(amid)*rr); tx.setAttribute('y', ccy+Math.sin(amid)*rr-18);
+      tx.setAttribute('text-anchor','middle'); tx.setAttribute('fill',cfg.color);
+      tx.setAttribute('font-size','10'); tx.setAttribute('font-weight','600'); tx.setAttribute('opacity','.4');
+      tx.textContent = cfg.label.toUpperCase(); svg.appendChild(tx);
+    });
+
+    const pos = [], byP = {};
+    items.forEach((t,i) => { (byP[t.p] = byP[t.p] || []).push({task:t, idx:i}); });
+    Object.keys(byP).forEach(p => {
+      const grp = byP[p], base = maxR*(pr[p]||.5);
+      const st = slot*30 - 90 + 1, spc = 28/(grp.length+1);
+      grp.forEach((it,gi) => {
+        const ang = (st + spc*(gi+1))*Math.PI/180;
+        const r = base + (gi%2===0 ? -12 : 12);
+        const dx = ccx+Math.cos(ang)*r, dy = ccy+Math.sin(ang)*r;
+        pos.push({x:dx,y:dy,task:it.task});
+        const tc = TYPE_CONFIG[it.task.y], dot = document.createElement('div');
+        dot.className = 'zoom-dot';
+        dot.style.cssText = `left:${dx-7}px;top:${dy-7}px;width:14px;height:14px;background:${tc.color};box-shadow:0 0 16px ${tc.color}88;`;
+        dotsC.appendChild(dot);
+      });
+    });
+
+    const popW = 230, popH = 76, used = [];
+    const hit = (x,y,w,h) => used.some(u => !(x+w<u.x||x>u.x+u.w||y+h<u.y||y>u.y+u.h));
+    pos.forEach(dp => {
+      const offs = [{ox:30,oy:-popH/2},{ox:-popW-30,oy:-popH/2},{ox:-popW/2,oy:-popH-25},{ox:-popW/2,oy:25},
+                    {ox:50,oy:-popH-10},{ox:50,oy:20},{ox:-popW-50,oy:-popH-10},{ox:-popW-50,oy:20},
+                    {ox:80,oy:-popH/2},{ox:-popW-80,oy:-popH/2},{ox:30,oy:-popH-40},{ox:30,oy:40},
+                    {ox:-popW/2,oy:-popH-50},{ox:-popW/2,oy:55},{ox:100,oy:-10},{ox:-popW-100,oy:-10}];
+      let px = dp.x+30, py = dp.y-popH/2;
+      for (const o of offs) {
+        const tx = dp.x+o.ox, ty = dp.y+o.oy;
+        if (tx>5 && tx+popW<W-5 && ty>5 && ty+popH<H-5 && !hit(tx,ty,popW,popH)) { px=tx; py=ty; break; }
+      }
+      used.push({x:px,y:py,w:popW,h:popH});
+      const t = dp.task, tc = TYPE_CONFIG[t.y], pc = PILAR_CONFIG[t.p], lc = LIFECYCLE_CONFIG[t.l];
+      const g = t.g ? `<div style="color:rgba(148,163,184,0.75);font-size:10px;margin-top:3px;">Mål: ${esc(t.g)}</div>` : '';
+      const pop = document.createElement('div'); pop.className = 'zoom-popup';
+      pop.style.cssText = `left:${px}px;top:${py}px;width:${popW}px;background:${tc.bg};border-color:${tc.border};`;
+      pop.innerHTML = `<div style="color:${tc.color};font-weight:700;font-size:13px;margin-bottom:2px;">${esc(t.t)}</div>
+        <div style="color:rgba(226,232,240,0.7);font-size:11px;">${esc(pc.label)} <span class="badge-sm" style="background:${tc.border};color:${tc.color}">${esc(lc?.label||t.l)}</span> <span style="color:rgba(148,163,184,0.6)">via ${esc(t.k)}</span></div>${g}`;
+      popC.appendChild(pop);
+      const pcx = px + (dp.x<px?0:popW), pcy = py+popH/2;
+      if (Math.sqrt((pcx-dp.x)**2 + (pcy-dp.y)**2) > 35) {
+        const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+        ln.setAttribute('x1',dp.x); ln.setAttribute('y1',dp.y);
+        ln.setAttribute('x2',pcx);  ln.setAttribute('y2',pcy);
+        ln.setAttribute('stroke',tc.color); ln.setAttribute('stroke-width','1');
+        ln.setAttribute('stroke-opacity','.3'); ln.setAttribute('stroke-dasharray','4,3');
+        svg.appendChild(ln);
+      }
+    });
+  });
+}
+function closeZoom() {
+  const ov = document.getElementById('zoomOverlay');
+  ov.classList.remove('show'); setTimeout(()=>{ ov.style.display='none'; }, 400);
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeZoom(); });
+
+/* ===========================================================================
+ *  RENDER + OPPSTART
+ * =========================================================================== */
+function renderWheel() {
+  activeTypes = new Set(Object.keys(TYPE_CONFIG));
+  activePilars = new Set(Object.keys(PILAR_CONFIG));
+  activeLifecycles = new Set(Object.keys(LIFECYCLE_CONFIG));
+  drawWheel(); buildDots(); buildHitAreas(); buildMonthLinks();
+  buildFilters(); buildLegend(); applyFilters();
+}
+
+function formatStamp(iso) {
+  if (!iso) return 'ukjent';
+  const d = new Date(iso); if (isNaN(d)) return iso;
+  return d.toLocaleString('nb-NO', {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function showError(msg, detail) {
+  const s = document.getElementById('wheelWrap');
+  s.innerHTML = `<div style="text-align:center;padding:48px 24px;max-width:560px;">
+      <div style="font-size:15px;font-weight:650;color:#fca5a5;margin-bottom:8px;">Kunne ikke laste årshjul-data</div>
+      <p style="font-size:13px;color:var(--color-muted);margin-bottom:12px;">${msg}</p>
+      <p style="font-size:11px;color:var(--color-muted-dim);font-family:monospace;word-break:break-all;">${detail||''}</p>
+      <p style="font-size:12px;color:var(--color-muted-dim);margin-top:16px;">Kontakt markedsavdelingen hvis dette vedvarer.</p>
+    </div>`;
+  const h = document.querySelector('.wheel-hint'); if (h) h.style.display = 'none';
+}
+function validate(d) {
+  if (!d || typeof d !== 'object') return 'Svaret er ikke et gyldig JSON-objekt.';
+  if (d.schemaVersion !== SCHEMA_VERSION) return `Datafilen har schemaVersion ${d.schemaVersion}, forventet ${SCHEMA_VERSION}.`;
+  if (!Array.isArray(d.tasks)) return 'Feltet "tasks" mangler eller er ikke en liste.';
+  if (!Array.isArray(d.years) || !d.years.length) return 'Feltet "years" mangler eller er tomt.';
+  if (!d.typeConfig  || !Object.keys(d.typeConfig).length)  return 'Feltet "typeConfig" mangler.';
+  if (!d.pilarConfig || !Object.keys(d.pilarConfig).length) return 'Feltet "pilarConfig" mangler.';
+  return null;
+}
+
+async function boot() {
+  if (DATA_URL.startsWith('REPLACE_ME')) {
+    showError('DATA_URL er ikke satt.', 'Lim inn den offentlige DAM-lenken i konstanten DATA_URL øverst i skriptet.');
+    return;
+  }
+  const wrap = document.getElementById('wheelWrap');
+  wrap.insertAdjacentHTML('beforeend',
+    `<div id="loadingMsg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      font-size:13px;color:var(--color-muted);background:var(--color-bg);z-index:80;">Laster årshjul-data ...</div>`);
+  try {
+    const url = CACHE_BUST ? DATA_URL + (DATA_URL.includes('?')?'&':'?') + '_=' + Date.now() : DATA_URL;
+    const res = await fetch(url, { cache:'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+    const data = await res.json();
+    const problem = validate(data);
+    if (problem) throw new Error(problem);
+
+    SAVED_VIEW_NAME  = data.savedViewName || '';
+    TIMESTAMP        = data.generatedAt || '';
+    ALL_TASKS        = data.tasks;
+    NEEDS_GOAL       = Array.isArray(data.needsGoal) ? data.needsGoal : [];
+    YEARS            = data.years;
+    TYPE_CONFIG      = data.typeConfig;
+    PILAR_CONFIG     = data.pilarConfig;
+    LIFECYCLE_CONFIG = (data.lifecycleConfig && Object.keys(data.lifecycleConfig).length)
+                       ? data.lifecycleConfig
+                       : { "alle": {color:"#94a3b8",filterBg:"#1e293b",cntBg:"#334155",cntColor:"#cbd5e1",label:"Alle"} };
+
+    const nowY = String(new Date().getFullYear());
+    ACTIVE_YEAR = YEARS.includes(data.defaultYear) ? data.defaultYear
+                : (YEARS.includes(nowY) ? nowY : YEARS[YEARS.length-1]);
+
+    document.getElementById('viewName').textContent = SAVED_VIEW_NAME;
+    document.getElementById('footerTimestamp').textContent = formatStamp(TIMESTAMP);
+    document.getElementById('loadingMsg')?.remove();
+
+    buildYearNav();
+    applyView();
+  } catch (err) {
+    document.getElementById('loadingMsg')?.remove();
+    const hint = (err instanceof TypeError)
+      ? 'Nettleseren ble blokkert fra å hente filen. Vanligste årsak er manglende CORS-tillatelse på DAM-lenken.'
+      : 'Datafilen kunne ikke leses.';
+    showError(hint, String(err));
+  }
+}
+boot();
+</script>
+</body>
+</html>
